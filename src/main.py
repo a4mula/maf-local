@@ -9,7 +9,7 @@ from src.clients.litellm_client import LiteLLMChatClient
 from src.agents.core_agent import CoreAgent
 from src.persistence.audit_log import AuditLogProvider
 from src.persistence.message_store import MessageStoreProvider
-from src.config.settings import settings
+from src.config.settings import settings # <-- We rely on this import
 from src.config.tool_registry import TOOL_REGISTRY 
 
 console = Console()
@@ -48,15 +48,11 @@ async def main():
 
     agent = CoreAgent(
         name="Local-Dev",
-        # STRICT PROMPT: Now safe because CoreAgent handles "Hello" internally.
-        system_prompt=(
-            "You are a precise AI assistant named Local-Dev. "
-            "CRITICAL INSTRUCTION: If a tool is provided to you, you MUST use it to answer questions. "
-            "Do not simulate calculations or database queries. "
-            "If the user asks for a calculation, use 'execute_code'. "
-            "If the user asks for history, use 'query_agent_messages'. "
-            "If NO tools are provided, simply chat conversationally."
-        ),
+        # -----------------------------------------------------------------
+        # CRITICAL FIX: Injecting the system prompt from the settings file
+        # to enforce Dependency Injection and use the strict new prompt.
+        system_prompt=settings.AGENT_SYSTEM_PROMPT, 
+        # -----------------------------------------------------------------
         client=llm_client,
         audit_log=audit_log,
         message_store=message_store,

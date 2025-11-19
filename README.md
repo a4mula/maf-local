@@ -26,20 +26,16 @@ This repository establishes the foundational **Phase 0 Baseline** for the Modula
 
 The repository includes all infrastructure and fixes to establish a stable local environment.
 
-### 1. Initial Core Services (Docker Compose)
+### 1. Core Services (Docker Compose)
 
 The `docker-compose.yaml` file orchestrates the necessary services:
 
 | Service | Technology | Purpose |
 | :--- | :--- | :--- |
 | **`maf-ollama`** | Ollama, Llama 3.1 8B | The local LLM provider, accelerated by the host GPU. |
-| **`maf-litellm`** | LiteLLM Proxy | Standardized API endpoint for the agent to access Ollama. |
+| **`maf-litellm`** | LiteLLM Proxy | Standardized API endpoint for the agent to access all models (local and cloud). |
 | **`maf-postgres`** | PostgreSQL | Relational database for structured persistence (Audit Logs, Agent Metadata). |
 | **`maf-chroma`** | Chroma DB | Vector database for Retrieval Augmented Generation (RAG). |
-
-### 2. Agent Infrastructure (Python)
-
-The `src/` directory contains the core framework components, including the corrected **conversational system prompt** and **Rich output features**.
 
 ---
 
@@ -47,16 +43,16 @@ The `src/` directory contains the core framework components, including the corre
 
 This section tracks the major functional milestones achieved in the MAF Local repository.
 
-### ✅ Phase 1: MAF Core Tool Execution Stabilization (COMPLETE)
+### ✅ Phase 1: MAF Core Tool Execution Stabilization (COMPLETED & VALIDATED)
 
-**Goal:** Establish a robust, working agent architecture capable of reliably using local tools, ensuring compliance with the Modular Agent Framework (MAF) tool-calling standard.
+**Goal:** Establish a robust, working agent architecture capable of reliably using local tools, ensuring compliance with the Modular Agent Framework (MAF) tool-calling standard across both local and cloud models.
 
 | Component | Status | Details |
 | :--- | :--- | :--- |
-| **Tool Execution** | Fixed | Agent successfully uses the `execute_code` tool via LiteLLM/Ollama. |
-| **Agent Logic** | Stabilized | CoreAgent implements the "Double Lock" strategy: hiding tools for conversational prompts ("Hello") and forcing tools for specific requests ("Calculate"). |
-| **Client Layer** | Fixed | LiteLLMChatClient now correctly transforms the flat MAF ToolSchema into the required nested OpenAI tool format. |
-| **Persistence** | Ready | Database/MessageStore infrastructure is initialized for future use. |
+| **Tool Execution Pipeline** | **Validated** | Agent successfully uses the `execute_code` tool via **both Local (Ollama) and Cloud (Gemini) routes**. The pipeline handles complex code generation, self-correction, and tool output consumption perfectly. |
+| **Agent Logic & Core Loop** | **Stabilized** | The CoreAgent correctly manages the conversation loop, history synchronization, and tool request/result passing, eliminating all infinite loop and API error conditions. |
+| **Error Handling** | **Validated** | Agent demonstrates **conversational error recovery** from failed tool calls (e.g., `ZeroDivisionError`), translating technical errors into user-friendly responses. |
+| **Persistence** | **Validated** | Database/MessageStore infrastructure is fully operational and **validated for accurate conversational history** recall via the `query_agent_messages` tool. |
 
 ---
 
@@ -64,16 +60,21 @@ This section tracks the major functional milestones achieved in the MAF Local re
 
 ### Step 1: Create Local Configuration (`.env` File)
 
-Create a file named **`.env`** in the project root directory (`maf-local/`) and include the following variables. These are used by **Docker Compose** to configure the LiteLLM proxy and ensure proper internal authentication.
+Create a file named **`.env`** in the project root directory (`maf-local/`) and include the following variables.
 
 ```bash
 # .env file content
-# --- LiteLLM Security Key ---
-# This master key must be set for the LiteLLM proxy to accept tool calling requests.
-# It should match the key expected by the client.
+
+# --- LiteLLM Security Key (REQUIRED) ---
+# This key is required for the LiteLLM proxy to accept internal requests.
 LITELLM_MASTER_KEY=sk-maf-secure-2025-key
 LITELLM_URL=[http://127.0.0.1:4000](http://127.0.0.1:4000)
 LITELLM_TIMEOUT=30
+
+# --- Cloud API Key (REQUIRED for Gemini Testing) ---
+# This key is used by the LiteLLM proxy to access Gemini (Cloud).
+# It is loaded by Pydantic into the settings.
+GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
 ````
 
 ### Step 2: Start the Stack
@@ -110,6 +111,5 @@ To shut down all running services:
 docker compose down
 ```
 
------
-
-
+```
+```

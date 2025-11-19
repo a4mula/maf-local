@@ -24,6 +24,8 @@ services:
       - "4000:4000"
     environment:
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      # CRITICAL FIX: Inject the Google API Key from the host's .env file
+      - GEMINI_API_KEY=${GEMINI_API_KEY} 
       - DATABASE_URL=postgresql://maf_user:maf_pass@maf-postgres:5432/maf_db
     volumes:
       - /home/robb/projects/maf-local/litellm_config.yaml:/app/proxy_server_config.yaml:ro

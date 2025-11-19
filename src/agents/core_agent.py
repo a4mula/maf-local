@@ -46,8 +46,8 @@ class CoreAgent:
                 try:
                     module = importlib.import_module(module_path)
                     if hasattr(module, func_name) and callable(getattr(module, func_name)):
-                         func = getattr(module, func_name)
-                         tool_functions[func_name] = func
+                        func = getattr(module, func_name)
+                        tool_functions[func_name] = func
                 except Exception as e:
                     print(f"[Tooling] WARNING: Failed to load tool {func_name} from {module_path}. Error: {e}")
         return tool_functions
@@ -100,13 +100,38 @@ class CoreAgent:
             # 3. Check for MAF Tool Call String (CRITICAL FIX: check for closing >)
             if llm_output.startswith("<call:") and llm_output.endswith(">"):
                 try:
-                    # Parse: <call:name:{"arg": "val"}>
+                    # Parse: <call:tool_call_id|name:{"arg": "val"}>
                     # Strip <call: from start and > from end
                     content = llm_output[6:-1]
                     
-                    # Split on the first colon to separate function name from JSON args
-                    tool_name, tool_args_json = content.split(':', 1)
+                    # Split on the first colon to separate id|name from JSON args
+                    id_and_name, tool_args_json = content.split(':', 1)
+                    
+                    # CRITICAL FIX: Split the ID from the Name
+                    tool_call_id, tool_name = id_and_name.split('|', 1) 
+                    
+                    # Ensure arguments are parsed as JSON object
                     tool_args = json.loads(tool_args_json)
+
+                    # --- CRITICAL FIX START: Store the LLM's Tool Call Turn ---
+                    # The LLM's response was a tool call. We must append this response to history
+                    # *before* the tool result, so LiteLLM can correctly link the response.
+                    assistant_tool_call_message = {
+                        "role": "assistant",
+                        "content": None, # Content is None for tool-call only responses
+                        "tool_calls": [
+                            {
+                                "id": tool_call_id,
+                                "function": {
+                                    "name": tool_name,
+                                    "arguments": tool_args_json
+                                },
+                                "type": "function"
+                            }
+                        ]
+                    }
+                    history.append(assistant_tool_call_message)
+                    # --- CRITICAL FIX END ---
 
                     print(f"[Tool Execution] Executing {tool_name} with {tool_args}")
                     await self.audit_log.log(self.name, "TOOL_CALL_REQUEST", f"{tool_name}: {tool_args_json}", self.message_store.session_id)
@@ -124,13 +149,16 @@ class CoreAgent:
                     tool_result_str = str(tool_result)
 
                     # Update History with Tool Result
-                    # We append a tool message so the LLM sees the result in the next turn
-                    history.append({"role": "tool", "content": tool_result_str, "name": tool_name})
+                    # This must immediately follow the assistant's tool call message
+                    history.append({
+                        "role": "tool", 
+                        "content": tool_result_str, 
+                        "tool_call_id": tool_call_id
+                    })
                     
                     await self.audit_log.log(self.name, "TOOL_CALL_RESULT", f"Result: {tool_result_str[:100]}...", self.message_store.session_id)
                     
                     # Reset tool_choice to auto for the follow-up turn so it can chat about the result
-                    # (We don't want to force the tool again immediately)
                     tool_choice = "auto" 
                     
                     # Continue the loop to send the result back to the LLM for final answer

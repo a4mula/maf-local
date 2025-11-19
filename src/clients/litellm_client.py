@@ -94,7 +94,9 @@ class LiteLLMChatClient(IChatClient):
             if llm_response_message.get("tool_calls"):
                 tool_call = llm_response_message["tool_calls"][0]
                 function_call = tool_call["function"]
-                return f"<call:{function_call['name']}:{function_call['arguments']}>"
+                # CRITICAL FIX: Include the tool_call["id"]
+                # New format: <call:tool_call_id|function_name:{"arg": "val"}>
+                return f"<call:{tool_call['id']}|{function_call['name']}:{function_call['arguments']}>"
 
             # 5. Return text
             return llm_response_message.get("content", "I am unable to generate a response.")
