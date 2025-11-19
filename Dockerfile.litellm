@@ -1,0 +1,1 @@
+FROM litellm/ollama:latest

@@ -1,0 +1,74 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: maf-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: always
+    networks:
+      - maf-network
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    container_name: maf-litellm
+    ports:
+      - "4000:4000"
+    environment:
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - DATABASE_URL=postgresql://maf_user:maf_pass@maf-postgres:5432/maf_db
+    volumes:
+      - /home/robb/projects/maf-local/litellm_config.yaml:/app/proxy_server_config.yaml:ro
+    command: ["--config", "/app/proxy_server_config.yaml"]
+    depends_on:
+      - ollama
+      - postgres
+    networks:
+      - maf-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 http://localhost:4000/health/liveliness || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: maf-postgres
+    environment:
+      POSTGRES_USER: maf_user
+      POSTGRES_PASSWORD: maf_pass
+      POSTGRES_DB: maf_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - maf-network
+
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: maf-chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      - maf-network
+
+volumes:
+  ollama_data:
+  postgres_data:
+  chroma_data:
+
+networks:
+  maf-network:
+    driver: bridge
