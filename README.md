@@ -33,18 +33,18 @@ Phase 0 establishes hygiene, infrastructure, and core components with intentio
 
 This repository has been rebuilt from scratch with intentional commits:
 
-    Hygiene enforced via .gitignore
+-Hygiene enforced via .gitignore
 
-    Infrastructure and configuration locked in
+-Infrastructure and configuration locked in
 
-    Core agent, client, middleware, persistence, tools, and workflows established
+-Core agent, client, middleware, persistence, tools, and workflows established
 
-    Tagged as phase-0 for reproducibility
+-Tagged as phase-0 for reproducibility
 
 ## Next Steps
 
-    Expand orchestration workflows
+-Expand orchestration workflows
 
-    Add CI/CD pipelines
+-Add CI/CD pipelines
 
-    Document agent behaviors and integration patterns
+-Document agent behaviors and integration patterns
