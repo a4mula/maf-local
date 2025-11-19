@@ -75,11 +75,15 @@ docker compose up --build -d
 
 ### Step 3: Activate and Run the Local Agent
 
-For local development, you **must activate the virtual environment** to ensure all dependencies (`httpx`, `rich`) are found:
+For local development, you **must activate the virtual environment** to ensure all dependencies (`httpx`, `rich`, etc.) are found:
 
 ```bash
-# Activate the virtual environment
+# Create and activate the virtual environment (if not already done)
+python3 -m venv .venv
 source .venv/bin/activate
+
+# Install required Python packages
+pip install -r requirements.txt
 
 # Run the agent as a module (required for correct package imports)
 python3 -m src.main
