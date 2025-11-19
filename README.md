@@ -1,54 +1,77 @@
-# maf-local
+cat << 'EOF' > README.md
+# 🤖 Modular Agent Framework (MAF) - Local Repository
 
-## Overview
-`maf-local` is a reproducible, containerized baseline for agent orchestration experiments.
-Phase 0 establishes hygiene, infrastructure, and core components with intentional commits, ensuring a clean foundation for future development.
+This repository establishes the foundational **Phase 0 Baseline** for the Modular Agent Framework (MAF). It is configured for **local, GPU-accelerated development** and provides a stable, reproducible LLM testing environment.
 
-## Project Structure
-- **.gitignore** — excludes caches, secrets, and transient files
-- **Dockerfile.litellm** / **docker-compose.yaml** — containerization and orchestration baseline
-- **litellm_config.yaml** / **requirements.txt** — runtime configuration and dependencies
-- **src/main.py** — entrypoint for orchestrator execution
-- **src/agents/** — core agent logic
-- **src/services/** — agent factory and supporting services
-- **src/clients/** — base client and LiteLLM integration
-- **src/middleware/** — audit and permission filters
-- **src/persistence/** — audit log and message store
-- **src/tools/** — code tools and database provider
-- **src/workflows/** — main orchestrator workflow
+---
 
-## Getting Started
-1. Clone the repo:
-   ```bash
-   git clone git@github.com:a4mula/maf-local.git
-   cd maf-local
-   ```
+## ⚠️ Critical Environmental Requirements
 
-2.  Build and run with Docker:
-    ```bash
-    docker-compose up --build
-    ```
-3.  Run locally:
-    ```bash
-    python src/main.py
-    ```
+**This repository is NOT intended for general, out-of-the-box consumption.** It is highly optimized and configured for specific hardware to ensure high performance with local LLMs.
 
-## Phase 0 Baseline
+### 1. Hardware Requirements
 
-This repository has been rebuilt from scratch with intentional commits:
+* **GPU:** NVIDIA GPU with dedicated CUDA support (e.g., **RTX 3060 Ti or better**).
+* **VRAM:** A minimum of **8GB** dedicated VRAM is required to run the default **Llama 3.1 8B Instruct** model via Ollama.
+* **Driver:** The latest NVIDIA CUDA drivers must be installed on the host machine.
 
--Hygiene enforced via .gitignore
+### 2. Software Prerequisites
 
--Infrastructure and configuration locked in
+* **Docker & Docker Compose (v2.0+)**: Essential for orchestrating the multi-service stack.
+* **Python 3.10+**: Required for the core agent application.
 
--Core agent, client, middleware, persistence, tools, and workflows established
+---
 
--Tagged as phase-0 for reproducibility
+## 🛠️ Phase 0 Baseline Components
 
-## Next Steps
+The repository includes all infrastructure and fixes to establish a stable local environment.
 
--Expand orchestration workflows
+### 1. Core Services (Docker Compose)
 
--Add CI/CD pipelines
+The `docker-compose.yaml` file orchestrates the necessary services:
 
--Document agent behaviors and integration patterns
+| Service | Technology | Purpose |
+| :--- | :--- | :--- |
+| **`maf-ollama`** | Ollama, Llama 3.1 8B | The local LLM provider, accelerated by the host GPU. |
+| **`maf-litellm`** | LiteLLM Proxy | Standardized API endpoint for the agent to access Ollama. |
+| **`maf-postgres`** | PostgreSQL | Relational database for structured persistence (Audit Logs, Agent Metadata). |
+| **`maf-chroma`** | Chroma DB | Vector database for Retrieval Augmented Generation (RAG). |
+
+### 2. Agent Infrastructure (Python)
+
+The `src/` directory contains the core framework components, including the corrected **conversational system prompt** and **Rich output features**.
+
+---
+
+## ⚙️ Usage Instructions
+
+### 1. Start the Stack
+
+Ensure Docker is running, then execute the following command from the project root:
+
+\`\`\`bash
+docker compose up --build -d
+\`\`\`
+
+> **Note:** The `-d` flag runs containers in detached mode, freeing your terminal.
+
+### 2. Activate and Run the Local Agent
+
+For local development, you **must activate the virtual environment** to ensure all dependencies (`httpx`, `rich`) are found:
+
+\`\`\`bash
+# Activate the virtual environment
+source .venv/bin/activate
+
+# Run the agent as a module (required for correct package imports)
+python3 -m src.main
+\`\`\`
+
+### 3. Stop the Stack
+
+To shut down all running services:
+
+\`\`\`bash
+docker compose down
+\`\`\`
+EOF
