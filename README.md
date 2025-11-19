@@ -22,13 +22,17 @@ Phase 0 establishes hygiene, infrastructure, and core components with intentio
    ```bash
    git clone git@github.com:a4mula/maf-local.git
    cd maf-local
-2. Build and run with Docker:
-   '''bash
-   docker-compose up --build
-3. Run locally:
-   '''bash
-   python src/main.py
-   
+   ```
+
+2.  Build and run with Docker:
+    ```bash
+    docker-compose up --build
+    ```
+3.  Run locally:
+    ```bash
+    python src/main.py
+    ```
+
 ## Phase 0 Baseline
 
 This repository has been rebuilt from scratch with intentional commits:
