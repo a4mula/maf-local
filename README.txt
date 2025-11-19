@@ -25,8 +25,28 @@ Phase 0 establishes hygiene, infrastructure, and core components with intentio
 
 2. Build and run with Docker:
    '''bash
-   docker-compose up --build
+   docker compose up --build
    
 3. Run locally:
    '''bash
    python src/main.py
+   
+Phase 0 Baseline
+
+This repository has been rebuilt from scratch with intentional commits:
+
+    Hygiene enforced via .gitignore
+
+    Infrastructure and configuration locked in
+
+    Core agent, client, middleware, persistence, tools, and workflows established
+
+    Tagged as phase-0 for reproducibility
+
+Next Steps
+
+    Expand orchestration workflows
+
+    Add CI/CD pipelines
+
+    Document agent behaviors and integration patterns

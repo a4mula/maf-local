@@ -1,7 +1,7 @@
 import asyncio
 import sys
-import uuid 
-import httpx 
+import uuid
+import httpx
 from rich.console import Console # NEW: For rich terminal output
 from rich.status import Status    # NEW: For the activity spinner
 
@@ -43,7 +43,7 @@ async def main():
     print(f"[System] Starting new session: {session_id}")
 
     # 1. DEPENDENCY INJECTION (DI) SETUP
-    
+
     # CRITICAL FIX: Ensure LiteLLM is ready before attempting to initialize the client.
     try:
         await wait_for_service(
@@ -57,27 +57,35 @@ async def main():
 
     print("[System] Initializing LiteLLM Client...")
     llm_client = LiteLLMChatClient()
-    
+
     # Initialize Persistence Providers
     print("[System] Initializing Persistence Providers...")
     audit_log_provider = AuditLogProvider()
     message_store_provider = MessageStoreProvider()
-    
+
     # CRITICAL: Set the current session ID on the message store
     message_store_provider.session_id = session_id
-    
+
     # 2. AGENT ASSEMBLY
     print("[System] Assembling 'Ollama-Agent' with persistence providers...")
     agent = CoreAgent(
         name="Local-Dev",
-        # NOTE: This system_prompt is a temporary hardcoded fix for the LLM's math error. 
-        # It MUST be cleaned up in the next phase to follow DI principles.
-        system_prompt="You are a helpful AI assistant running locally on an RTX 3060 Ti.",
+        # NOTE: Original system_prompt (Commented out because it lacked instructions for conversational chat, 
+        # causing the agent to incorrectly default to trying to call a function for simple greetings.)
+        # system_prompt="You are a helpful AI assistant running locally on an RTX 3060 Ti.",
+
+        # NEW: System prompt includes instructions for conversational responses
+        system_prompt=(
+            "You are a helpful, friendly AI assistant named Local-Dev, running locally on an RTX 3060 Ti. "
+            "Your main purpose is to answer user questions conversationally. "
+            "If the user asks a simple question or a greeting, respond in natural language. "
+            "DO NOT attempt to call a function unless the user explicitly asks you to retrieve data or perform a task."
+        ),
         client=llm_client,
         audit_log=audit_log_provider,       # Inject Audit Log
         message_store=message_store_provider # Inject Message Store
     )
-    
+
     # Initial audit log entry
     await audit_log_provider.log(
         agent_name=agent.name,
@@ -95,7 +103,7 @@ async def main():
         try:
             # Use console.input instead of built-in input for better rich compatibility
             user_input = console.input("[bold yellow]You:[/bold yellow] ")
-            
+
             if user_input.lower() in ["exit", "quit"]:
                 await audit_log_provider.log(
                     agent_name=agent.name,
@@ -104,7 +112,7 @@ async def main():
                     session_id=session_id
                 )
                 break
-                
+
             # Define status message
             if first_interaction:
                 status_text = "[bold cyan]Agent: Loading LLM model for first time... please wait[/bold cyan]"
