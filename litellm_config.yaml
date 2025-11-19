@@ -1,0 +1,12 @@
+# litellm_config.yaml
+model_list:
+  - model_name: "maf-default"
+    litellm_params:
+      model: "ollama_chat/llama3.1"
+      api_base: "http://maf-ollama:11434"
+    model_info:
+      supports_function_calling: true
+
+# CRITICAL FIX: Add this section to register the master key
+api_keys:
+  "sk-maf-secure-2025-key": "local-agent-key"
