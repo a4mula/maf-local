@@ -1,4 +1,8 @@
-cat << 'EOF' > README.md
+-----
+
+## 📄 Finalized `README.md`
+
+````markdown
 # 🤖 Modular Agent Framework (MAF) - Local Repository
 
 This repository establishes the foundational **Phase 0 Baseline** for the Modular Agent Framework (MAF). It is configured for **local, GPU-accelerated development** and provides a stable, reproducible LLM testing environment.
@@ -45,33 +49,48 @@ The `src/` directory contains the core framework components, including the corre
 
 ## ⚙️ Usage Instructions
 
-### 1. Start the Stack
+### Step 1: Create Local Configuration (`.env` File)
 
-Ensure Docker is running, then execute the following command from the project root:
+Create a file named **`.env`** in the project root directory (`maf-local/`) and include the following variables. These are used by **Docker Compose** to configure the LiteLLM proxy and ensure proper internal authentication.
 
-\`\`\`bash
+```bash
+# .env file content
+# --- LiteLLM Security Key ---
+# This master key must be set for the LiteLLM proxy to accept tool calling requests.
+# It should match the key expected by the client.
+LITELLM_MASTER_KEY=sk-maf-secure-2025-key
+LITELLM_URL=[http://127.0.0.1:4000](http://127.0.0.1:4000)
+LITELLM_TIMEOUT=30
+````
+
+### Step 2: Start the Stack
+
+Ensure Docker is running and the `.env` file is present, then execute the following command:
+
+```bash
 docker compose up --build -d
-\`\`\`
+```
 
 > **Note:** The `-d` flag runs containers in detached mode, freeing your terminal.
 
-### 2. Activate and Run the Local Agent
+### Step 3: Activate and Run the Local Agent
 
 For local development, you **must activate the virtual environment** to ensure all dependencies (`httpx`, `rich`) are found:
 
-\`\`\`bash
+```bash
 # Activate the virtual environment
 source .venv/bin/activate
 
 # Run the agent as a module (required for correct package imports)
 python3 -m src.main
-\`\`\`
+```
 
-### 3. Stop the Stack
+### Step 4: Stop the Stack
 
 To shut down all running services:
 
-\`\`\`bash
+```bash
 docker compose down
-\`\`\`
-EOF
+```
+
+-----
