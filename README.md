@@ -1,7 +1,3 @@
------
-
-## 📄 Finalized `README.md`
-
 ````markdown
 # 🤖 Modular Agent Framework (MAF) - Local Repository
 
@@ -30,7 +26,7 @@ This repository establishes the foundational **Phase 0 Baseline** for the Modula
 
 The repository includes all infrastructure and fixes to establish a stable local environment.
 
-### 1. Core Services (Docker Compose)
+### 1. Initial Core Services (Docker Compose)
 
 The `docker-compose.yaml` file orchestrates the necessary services:
 
@@ -44,6 +40,23 @@ The `docker-compose.yaml` file orchestrates the necessary services:
 ### 2. Agent Infrastructure (Python)
 
 The `src/` directory contains the core framework components, including the corrected **conversational system prompt** and **Rich output features**.
+
+---
+
+## 🚀 Development Phases and Progress
+
+This section tracks the major functional milestones achieved in the MAF Local repository.
+
+### ✅ Phase 1: MAF Core Tool Execution Stabilization (COMPLETE)
+
+**Goal:** Establish a robust, working agent architecture capable of reliably using local tools, ensuring compliance with the Modular Agent Framework (MAF) tool-calling standard.
+
+| Component | Status | Details |
+| :--- | :--- | :--- |
+| **Tool Execution** | Fixed | Agent successfully uses the `execute_code` tool via LiteLLM/Ollama. |
+| **Agent Logic** | Stabilized | CoreAgent implements the "Double Lock" strategy: hiding tools for conversational prompts ("Hello") and forcing tools for specific requests ("Calculate"). |
+| **Client Layer** | Fixed | LiteLLMChatClient now correctly transforms the flat MAF ToolSchema into the required nested OpenAI tool format. |
+| **Persistence** | Ready | Database/MessageStore infrastructure is initialized for future use. |
 
 ---
 
@@ -98,3 +111,5 @@ docker compose down
 ```
 
 -----
+
+

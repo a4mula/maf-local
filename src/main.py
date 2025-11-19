@@ -2,144 +2,90 @@ import asyncio
 import sys
 import uuid
 import httpx
-from rich.console import Console # NEW: For rich terminal output
-from rich.status import Status    # NEW: For the activity spinner
+from rich.console import Console
+from rich.status import Status
 
 from src.clients.litellm_client import LiteLLMChatClient
 from src.agents.core_agent import CoreAgent
 from src.persistence.audit_log import AuditLogProvider
 from src.persistence.message_store import MessageStoreProvider
 from src.config.settings import settings
+from src.config.tool_registry import TOOL_REGISTRY 
 
-# Initialize a Rich console globally
-console = Console() # NEW
+console = Console()
 
-# ... (wait_for_service function remains unchanged) ...
 async def wait_for_service(url: str, description: str, timeout: int = 60, interval: int = 5):
-    """Waits for a service at the given URL to become available."""
-    print(f"[System] Waiting for {description} at {url}...")
+    console.print(f"[System] Waiting for {description} at {url}...")
     for elapsed in range(0, timeout, interval):
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(url, timeout=interval)
                 if response.status_code < 500:
-                    print(f"[System] {description} is ready.")
+                    console.print(f"[System] {description} is ready.")
                     return
         except httpx.RequestError:
             pass
-
-        print(f"[System] {description} not ready. Retrying in {interval}s... ({elapsed + interval}s elapsed)")
+        console.print(f"[System] {description} not ready. Retrying...")
         await asyncio.sleep(interval)
-
-    raise TimeoutError(f"Service {description} at {url} failed to become available within {timeout} seconds.")
-# ----------------------------------------------------
-
+    raise TimeoutError(f"Service {description} failed.")
 
 async def main():
-    print("--- MAF (Local 2025) Initializing ---")
-
-    # 0. SETUP SESSION
+    console.print("--- MAF (Local 2025) Initializing ---")
     session_id = str(uuid.uuid4())
-    print(f"[System] Starting new session: {session_id}")
 
-    # 1. DEPENDENCY INJECTION (DI) SETUP
-
-    # CRITICAL FIX: Ensure LiteLLM is ready before attempting to initialize the client.
     try:
-        await wait_for_service(
-            url=settings.LITELLM_URL,
-            description="LiteLLM Proxy"
-        )
+        await wait_for_service(settings.LITELLM_URL, "LiteLLM Proxy")
     except TimeoutError as e:
-        print(f"[System Error] Initialization failed: {e}")
+        console.print(f"[bold red]System Error:[/bold red] {e}")
         sys.exit(1)
 
+    llm_client = LiteLLMChatClient(model_name=settings.DEFAULT_MODEL)
+    audit_log = AuditLogProvider()
+    message_store = MessageStoreProvider()
+    message_store.session_id = session_id
 
-    print("[System] Initializing LiteLLM Client...")
-    llm_client = LiteLLMChatClient()
+    agent_tools = [t.model_dump() for t in TOOL_REGISTRY.get("Local-Dev", [])]
 
-    # Initialize Persistence Providers
-    print("[System] Initializing Persistence Providers...")
-    audit_log_provider = AuditLogProvider()
-    message_store_provider = MessageStoreProvider()
-
-    # CRITICAL: Set the current session ID on the message store
-    message_store_provider.session_id = session_id
-
-    # 2. AGENT ASSEMBLY
-    print("[System] Assembling 'Ollama-Agent' with persistence providers...")
     agent = CoreAgent(
         name="Local-Dev",
-        # NOTE: Original system_prompt (Commented out because it lacked instructions for conversational chat, 
-        # causing the agent to incorrectly default to trying to call a function for simple greetings.)
-        # system_prompt="You are a helpful AI assistant running locally on an RTX 3060 Ti.",
-
-        # NEW: System prompt includes instructions for conversational responses
+        # STRICT PROMPT: Now safe because CoreAgent handles "Hello" internally.
         system_prompt=(
-            "You are a helpful, friendly AI assistant named Local-Dev, running locally on an RTX 3060 Ti. "
-            "Your main purpose is to answer user questions conversationally. "
-            "If the user asks a simple question or a greeting, respond in natural language. "
-            "DO NOT attempt to call a function unless the user explicitly asks you to retrieve data or perform a task."
+            "You are a precise AI assistant named Local-Dev. "
+            "CRITICAL INSTRUCTION: If a tool is provided to you, you MUST use it to answer questions. "
+            "Do not simulate calculations or database queries. "
+            "If the user asks for a calculation, use 'execute_code'. "
+            "If the user asks for history, use 'query_agent_messages'. "
+            "If NO tools are provided, simply chat conversationally."
         ),
         client=llm_client,
-        audit_log=audit_log_provider,       # Inject Audit Log
-        message_store=message_store_provider # Inject Message Store
+        audit_log=audit_log,
+        message_store=message_store,
+        registered_tools=agent_tools
     )
 
-    # Initial audit log entry
-    await audit_log_provider.log(
-        agent_name=agent.name,
-        operation="SESSION_START",
-        details=f"New agent session started with session_id: {session_id}",
-        session_id=session_id
-    )
+    await audit_log.log(agent.name, "SESSION_START", f"ID: {session_id}", session_id)
 
-    # NEW: Flag to track the first (slow) interaction
-    first_interaction = True
-
-    # 3. RUNTIME LOOP
-    print(f"[System] Agent '{agent.name}' is ready. Type 'exit' to quit.")
+    console.print(f"[System] Agent '[bold yellow]{agent.name}[/bold yellow]' is ready. Type 'exit' to quit.")
+    
     while True:
         try:
-            # Use console.input instead of built-in input for better rich compatibility
-            user_input = console.input("[bold yellow]You:[/bold yellow] ")
-
+            user_input = console.input("[bold blue]You:[/bold blue] ")
             if user_input.lower() in ["exit", "quit"]:
-                await audit_log_provider.log(
-                    agent_name=agent.name,
-                    operation="SESSION_END",
-                    details="User initiated exit.",
-                    session_id=session_id
-                )
+                console.print("[bold green]Goodbye![/bold green]")
                 break
+            
+            if not user_input.strip(): continue
 
-            # Define status message
-            if first_interaction:
-                status_text = "[bold cyan]Agent: Loading LLM model for first time... please wait[/bold cyan]"
-            else:
-                status_text = "[bold cyan]Agent: Thinking...[/bold cyan]"
-
-            # Run the agent processing inside the rich status spinner
-            with Status(status_text, spinner="dots", console=console):
+            with Status("[bold cyan]Thinking...[/bold cyan]", spinner="dots", console=console):
                 response = await agent.process(user_input)
 
-            # Print the final response and update the flag
             console.print(f"[bold green]Agent:[/bold green] {response}")
-            first_interaction = False
 
         except Exception as e:
-            # Removed the `print("Agent: ... thinking ...")` since rich handles it
-            print(f"[System Error] An error occurred during processing: {e}")
-            await audit_log_provider.log(
-                agent_name=agent.name,
-                operation="CRITICAL_ERROR",
-                details=f"An unhandled exception occurred: {str(e)}",
-                session_id=session_id
-            )
-            break
+            console.print(f"[bold red]Error:[/bold red] {e}")
+            try: await audit_log.log(agent.name, "ERROR", str(e), session_id)
+            except: pass
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        sys.exit(0)
+    try: asyncio.run(main())
+    except KeyboardInterrupt: sys.exit(0)

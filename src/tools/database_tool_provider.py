@@ -66,7 +66,6 @@ async def query_agent_messages(session_id: Optional[str] = None, role: Optional[
         if conn:
             await conn.close()
 
-# Note: While not registered in the ToolRegistry yet, this is a useful sister function.
 async def query_audit_log(operation: Optional[str] = None, agent_name: Optional[str] = None) -> str:
     """
     Queries the audit_log table for recent entries based on provided filters.

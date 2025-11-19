@@ -1,74 +1,150 @@
-import io
-import contextlib
-from typing import List, Dict, Any
+import inspect
+import json
+import importlib
+from typing import List, Dict, Any, Optional
 
 from src.clients.base import IChatClient
-from src.persistence.audit_log import AuditLogProvider # New Import
-from src.persistence.message_store import MessageStoreProvider # New Import
+from src.persistence.audit_log import AuditLogProvider
+from src.persistence.message_store import MessageStoreProvider
+from src.config.settings import settings
+from src.config.tool_registry import TOOL_REGISTRY
 
 class CoreAgent:
     """
-    The Unified Agent.
-    It does not know *which* model it is using, only that it has an IChatClient.
-    It now accepts and utilizes persistence providers via Dependency Injection.
+    The central intelligence layer for the Microsoft Agent Framework (MAF).
+    Adheres to the MAF Simple Agent Pattern: Orchestrates tool execution via the Agent Loop.
     """
+
     def __init__(
-        self, 
-        name: str, 
-        system_prompt: str,  # <-- KEEP: Original parameter for DI compliance
+        self,
+        name: str,
+        system_prompt: str,
         client: IChatClient,
-        audit_log: AuditLogProvider,     # New Dependency: Audit Log Provider
-        message_store: MessageStoreProvider # New Dependency: Message Store Provider
+        audit_log: AuditLogProvider,
+        message_store: MessageStoreProvider,
+        registered_tools: List[Dict[str, Any]],
+        max_tool_call_depth: int = 5
     ):
         self.name = name
-        # self.system_prompt = system_prompt  # <-- COMMENTED OUT: Original code for DI
-        self.client = client # The injected LLM client
-        self.audit_log = audit_log # The injected audit provider
-        self.message_store = message_store # The injected message store
+        self.system_prompt = system_prompt
+        self.client = client
+        self.audit_log = audit_log
+        self.message_store = message_store
+        self.registered_tools = registered_tools
+        self.max_tool_call_depth = max_tool_call_depth
         
-        # 🛑 TEMPORARY DI VIOLATION FOR VALIDATION 🛑
-        # JUSTIFICATION: We must load a strict system prompt here, overriding the injected one, 
-        # to guarantee the fix for the LLM's final reasoning error (31.5 calculation).
-        # This will be reverted after validation is complete.
-        self.system_prompt = (
-            "You are a helpful and precise AI assistant running locally on an RTX 3060 Ti. "
-            "Your main goal is accuracy. When a tool returns a result, you MUST prioritize "
-            "that exact, verbatim result and integrate it accurately into your final answer. "
-            "Do not perform any additional mathematical reasoning or recalculation."
-        )
+        self.tool_functions = self._load_tool_functions(registered_tools)
 
-        # HISTORY INITIALIZATION: 
-        # Starts with the system prompt. In a production app, the history
-        # would be asynchronously loaded from message_store here.
-        self.history: List[Dict[str, str]] = [{"role": "system", "content": self.system_prompt}]
-        # Note: self.history now uses the hardcoded self.system_prompt
-        
-    async def process(self, user_input: str) -> str:
-        # 1. Log Process Start
-        await self.audit_log.log(
-            agent_name=self.name,
-            operation="PROCESS_START",
-            details=f"Received input: {user_input[:50]}..."
-        )
-        
-        # 2. Update Memory & Store User Message
-        user_message = {"role": "user", "content": user_input}
-        self.history.append(user_message)
-        await self.message_store.store_message(user_message['role'], user_message['content']) # Store to DB
+    def _load_tool_functions(self, schemas: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Dynamically loads executable functions from tool schemas."""
+        tool_functions = {}
+        for schema in schemas:
+            func_name = schema.get("function_name")
+            module_path = schema.get("module_path")
+            
+            if func_name and module_path:
+                try:
+                    module = importlib.import_module(module_path)
+                    if hasattr(module, func_name) and callable(getattr(module, func_name)):
+                         func = getattr(module, func_name)
+                         tool_functions[func_name] = func
+                except Exception as e:
+                    print(f"[Tooling] WARNING: Failed to load tool {func_name} from {module_path}. Error: {e}")
+        return tool_functions
 
-        # 3. Delegate to the Client (The "Brain")
-        response_content = await self.client.chat(self.history)
-        
-        # 4. Update Memory & Store Agent Response
-        agent_message = {"role": "assistant", "content": response_content}
-        self.history.append(agent_message)
-        await self.message_store.store_message(agent_message['role'], agent_message['content']) # Store to DB
-        
-        # 5. Log Process End
-        await self.audit_log.log(
-            agent_name=self.name,
-            operation="PROCESS_END",
-            details=f"Sent response: {response_content[:50]}..."
-        )
+    def _is_conversational_prompt(self, text: str) -> bool:
+        """Heuristic to detect simple greetings and prevent tool exposure."""
+        t = text.strip().lower()
+        greetings = {'hello', 'hi', 'hey', 'greetings', 'good morning', 'good afternoon'}
+        # If input is short (< 5 words) and contains a greeting
+        return len(t.split()) < 5 and any(g in t for g in greetings)
 
-        return response_content
+    async def process(self, prompt: str) -> str:
+        """
+        Handles the user prompt, manages conversation history, and orchestrates 
+        tool calling (MAF Simple Agent Pattern).
+        """
+        # 1. Retrieve Current History
+        history = await self.message_store.get_history(limit=50)
+        history.append({"role": "user", "content": prompt})
+        await self.message_store.store_message("user", prompt)
+
+        # 2. Determine Tool Strategy
+        # STRATEGY A: Safety - Hide tools for greetings
+        if self._is_conversational_prompt(prompt):
+            active_tools = None
+            tool_choice = None
+            print(f"[CoreAgent] Conversational intent detected. Hiding tools.")
+        else:
+            # STRATEGY B: Compliance - Expose tools and FORCE specific ones if detected
+            active_tools = self.registered_tools
+            tool_choice = "auto" # Default
+            
+            # Check for explicit tool requests in the prompt
+            for tool_schema in self.registered_tools:
+                if tool_schema['function_name'] in prompt:
+                    print(f"[CoreAgent] Detected specific tool request: {tool_schema['function_name']}. Forcing tool_choice.")
+                    # LiteLLM/OpenAI format for forcing a specific tool
+                    tool_choice = {"type": "function", "function": {"name": tool_schema['function_name']}}
+                    break
+
+        # Start the conversation loop
+        for _ in range(self.max_tool_call_depth):
+            
+            llm_output = await self.client.chat(
+                history=history,
+                tools=active_tools, 
+                tool_choice=tool_choice
+            )
+
+            # 3. Check for MAF Tool Call String (CRITICAL FIX: check for closing >)
+            if llm_output.startswith("<call:") and llm_output.endswith(">"):
+                try:
+                    # Parse: <call:name:{"arg": "val"}>
+                    # Strip <call: from start and > from end
+                    content = llm_output[6:-1]
+                    
+                    # Split on the first colon to separate function name from JSON args
+                    tool_name, tool_args_json = content.split(':', 1)
+                    tool_args = json.loads(tool_args_json)
+
+                    print(f"[Tool Execution] Executing {tool_name} with {tool_args}")
+                    await self.audit_log.log(self.name, "TOOL_CALL_REQUEST", f"{tool_name}: {tool_args_json}", self.message_store.session_id)
+
+                    if tool_name in self.tool_functions:
+                        func = self.tool_functions[tool_name]
+                        # Handle both async and sync functions
+                        if inspect.iscoroutinefunction(func):
+                            tool_result = await func(**tool_args)
+                        else:
+                            tool_result = func(**tool_args)
+                    else:
+                        tool_result = f"Error: Tool '{tool_name}' not found."
+
+                    tool_result_str = str(tool_result)
+
+                    # Update History with Tool Result
+                    # We append a tool message so the LLM sees the result in the next turn
+                    history.append({"role": "tool", "content": tool_result_str, "name": tool_name})
+                    
+                    await self.audit_log.log(self.name, "TOOL_CALL_RESULT", f"Result: {tool_result_str[:100]}...", self.message_store.session_id)
+                    
+                    # Reset tool_choice to auto for the follow-up turn so it can chat about the result
+                    # (We don't want to force the tool again immediately)
+                    tool_choice = "auto" 
+                    
+                    # Continue the loop to send the result back to the LLM for final answer
+                    continue
+                    
+                except Exception as e:
+                    error_msg = f"Tool execution failed: {e}"
+                    print(f"[CoreAgent Error] {error_msg}")
+                    return error_msg
+
+            # 4. Final Text Response
+            # If the output wasn't a tool call, it's the final answer.
+            await self.message_store.store_message("assistant", llm_output)
+            await self.audit_log.log(self.name, "FINAL_RESPONSE", llm_output, self.message_store.session_id)
+            return llm_output
+
+        return "Max tool call depth reached."
