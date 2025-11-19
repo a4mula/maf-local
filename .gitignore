@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+.venv/          # Local Python virtual environment
+venv/
+.python-version
+.DS_Store
+
+# Docker/Infrastructure & Secrets
+.env            # CRITICAL: Do not commit your secrets/database passwords!
+maf-volumes/    # Large, local Docker volumes
+ollama/         # Ollama models are large
+litellm_logs/   # LiteLLM logs
