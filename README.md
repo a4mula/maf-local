@@ -1,115 +1,142 @@
-````markdown
-# 🤖 Modular Agent Framework (MAF) - Local Repository
+# MAF Local (Hierarchical DevStudio)
 
-This repository establishes the foundational **Phase 0 Baseline** for the Modular Agent Framework (MAF). It is configured for **local, GPU-accelerated development** and provides a stable, reproducible LLM testing environment.
+**A GPU-accelerated, local-first development environment for the Microsoft Agent Framework (MAF SDK).**
 
----
-
-## ⚠️ Critical Environmental Requirements
-
-**This repository is NOT intended for general, out-of-the-box consumption.** It is highly optimized and configured for specific hardware to ensure high performance with local LLMs.
-
-### 1. Hardware Requirements
-
-* **GPU:** NVIDIA GPU with dedicated CUDA support (e.g., **RTX 3060 Ti or better**).
-* **VRAM:** A minimum of **8GB** dedicated VRAM is required to run the default **Llama 3.1 8B Instruct** model via Ollama.
-* **Driver:** The latest NVIDIA CUDA drivers must be installed on the host machine.
-
-### 2. Software Prerequisites
-
-* **Docker & Docker Compose (v2.0+)**: Essential for orchestrating the multi-service stack.
-* **Python 3.10+**: Required for the core agent application.
+This repository provides a complete, containerized studio for building, testing, and observing hierarchical multi-agent systems. It is designed to run locally on NVIDIA hardware, leveraging **Ollama** for local inference and **LiteLLM** for unified model access.
 
 ---
 
-## 🛠️ Phase 0 Baseline Components
-
-The repository includes all infrastructure and fixes to establish a stable local environment.
-
-### 1. Core Services (Docker Compose)
-
-The `docker-compose.yaml` file orchestrates the necessary services:
-
-| Service | Technology | Purpose |
-| :--- | :--- | :--- |
-| **`maf-ollama`** | Ollama, Llama 3.1 8B | The local LLM provider, accelerated by the host GPU. |
-| **`maf-litellm`** | LiteLLM Proxy | Standardized API endpoint for the agent to access all models (local and cloud). |
-| **`maf-postgres`** | PostgreSQL | Relational database for structured persistence (Audit Logs, Agent Metadata). |
-| **`maf-chroma`** | Chroma DB | Vector database for Retrieval Augmented Generation (RAG). |
+- **Containerized Workflow**: One-command startup via Docker Compose.
 
 ---
 
-## 🚀 Development Phases and Progress
+## 🛠️ Prerequisites
 
-This section tracks the major functional milestones achieved in the MAF Local repository.
-
-### ✅ Phase 1: MAF Core Tool Execution Stabilization (COMPLETED & VALIDATED)
-
-**Goal:** Establish a robust, working agent architecture capable of reliably using local tools, ensuring compliance with the Modular Agent Framework (MAF) tool-calling standard across both local and cloud models.
-
-| Component | Status | Details |
-| :--- | :--- | :--- |
-| **Tool Execution Pipeline** | **Validated** | Agent successfully uses the `execute_code` tool via **both Local (Ollama) and Cloud (Gemini) routes**. The pipeline handles complex code generation, self-correction, and tool output consumption perfectly. |
-| **Agent Logic & Core Loop** | **Stabilized** | The CoreAgent correctly manages the conversation loop, history synchronization, and tool request/result passing, eliminating all infinite loop and API error conditions. |
-| **Error Handling** | **Validated** | Agent demonstrates **conversational error recovery** from failed tool calls (e.g., `ZeroDivisionError`), translating technical errors into user-friendly responses. |
-| **Persistence** | **Validated** | Database/MessageStore infrastructure is fully operational and **validated for accurate conversational history** recall via the `query_agent_messages` tool. |
+- **Linux OS** (Tested on Ubuntu/Debian)
+- **NVIDIA GPU** (8GB+ VRAM recommended for Llama 3.1 8B)
+- **NVIDIA Container Toolkit** (Required for GPU passthrough to Docker)
+- **Docker & Docker Compose** (v2.0+)
+- **Python 3.10+** (For local CLI tools)
 
 ---
 
-## ⚙️ Usage Instructions
+## 🚀 Quick Start
 
-### Step 1: Create Local Configuration (`.env` File)
-
-Create a file named **`.env`** in the project root directory (`maf-local/`) and include the following variables.
-
+### 1. Clone the Repository
 ```bash
-# .env file content
-
-# --- LiteLLM Security Key (REQUIRED) ---
-# This key is required for the LiteLLM proxy to accept internal requests.
-LITELLM_MASTER_KEY=sk-maf-secure-2025-key
-LITELLM_URL=[http://127.0.0.1:4000](http://127.0.0.1:4000)
-LITELLM_TIMEOUT=30
-
-# --- Cloud API Key (REQUIRED for Gemini Testing) ---
-# This key is used by the LiteLLM proxy to access Gemini (Cloud).
-# It is loaded by Pydantic into the settings.
-GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
-````
-
-### Step 2: Start the Stack
-
-Ensure Docker is running and the `.env` file is present, then execute the following command:
-
-```bash
-docker compose up --build -d
+git clone https://github.com/your-org/maf-local.git
+cd maf-local
 ```
 
-> **Note:** The `-d` flag runs containers in detached mode, freeing your terminal.
-
-### Step 3: Activate and Run the Local Agent
-
-For local development, you **must activate the virtual environment** to ensure all dependencies (`httpx`, `rich`, etc.) are found:
+### 2. Configure Environment
+The system will automatically generate a default `.env` file on first run, but you can create one manually to set your API keys.
 
 ```bash
-# Create and activate the virtual environment (if not already done)
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install required Python packages
-pip install -r requirements.txt
-
-# Run the agent as a module (required for correct package imports)
-python3 -m src.main
+# Create .env file
+echo "LITELLM_MASTER_KEY=sk-maf-secure-2025-key" > .env
+# Optional: Add Gemini API Key for cloud fallback
+echo "GEMINI_API_KEY=your_key_here" >> .env
 ```
 
-### Step 4: Stop the Stack
+### 3. Start the Node
+We provide a helper script to build and start all services in the correct order.
 
-To shut down all running services:
+```bash
+./scripts/start_node.sh
+```
+
+This script will:
+1.  Build all Docker images (Agent, UI, LiteLLM).
+2.  Start the containers in detached mode.
+3.  Wait for services to stabilize.
+4.  Apply database migrations.
+
+---
+
+## 🖥️ Usage
+
+Once the node is running, you can access the following interfaces:
+
+### 1. MAF Studio UI
+**URL:** [http://localhost:8501](http://localhost:8501)
+- **Chat Interface**: Interact with the Liaison Agent to plan projects or ask questions.
+- **Live Graph**: View the real-time hierarchy and status of all active agents.
+
+### 2. Observability Dashboards
+- **Grafana:** [http://localhost:3000](http://localhost:3000) (Default login: `admin` / `admin`)
+- **Prometheus:** [http://localhost:9093](http://localhost:9093)
+
+### 3. Agent Terminal (CLI)
+To interact with the agent directly via the command line:
+
+```bash
+docker attach maf-agent
+```
+*(Type `exit` to detach)*
+
+---
+
+## 📂 Project Structure
+
+The project is organized as follows:
+
+```text
+maf-local/
+├── config/                 # Configuration files (LiteLLM, Prometheus)
+├── docker/                 # Dockerfiles for all services
+├── docs/                   # Documentation (Planning, Vision, Feedback)
+├── scripts/                # Utility scripts (Startup, Migrations)
+├── src/                    # Source code for Agents and API
+├── tests/                  # Unit and Verification tests
+├── ui-next/                # Next.js source for Live Graph
+└── docker-compose.yaml     # Service orchestration
+```
+
+---
+
+## 📚 Documentation
+
+This project uses an **agent-optimized documentation system** designed for both human developers and AI agents.
+
+### For Humans 👥
+
+**Start here:** [`docs/INDEX.md`](./docs/INDEX.md) - Complete documentation navigation guide
+
+**Quick Links:**
+- 🚀 [Quick Start Guide](./docs/guides/QUICKSTART.md) - Get up and running in 10 minutes
+- 🏗️ [Current Architecture](./docs/architecture/CURRENT.md) - System design and components
+- 📋 [Current Phase](./docs/planning/CURRENT.md) - Active development work (Phase 10.1)
+- ❓ [Why Hierarchical Agents?](./docs/why/RATIONALE.md) - Design rationale
+- 🔮 [Vision](./docs/vision/FUTURE.md) - Long-term roadmap
+
+### For Agents 🤖
+
+**Agent Workspace:** [`docs/.ai/`](./docs/.ai/)
+
+**Required Reading (in order):**
+1. [`GUIDELINES.md`](./docs/.ai/GUIDELINES.md) - Coding standards and MAF SDK compliance rules
+2. [`MANIFEST.yaml`](./docs/.ai/MANIFEST.yaml) - Feature tracking and navigation shortcuts
+3. [`agents.md`](./docs/.ai/agents.md) - Agent roles, tools, and boundaries
+
+**Navigation Shortcuts:**
+- What am I working on? → [`planning/CURRENT.md`](./docs/planning/CURRENT.md)
+- What happened before? → [`planning/ARCHIVE.md`](./docs/planning/ARCHIVE.md)
+- What is the system? → [`architecture/CURRENT.md`](./docs/architecture/CURRENT.md)
+- Why does X exist? → [`why/RATIONALE.md`](./docs/why/RATIONALE.md)
+- What needs fixing? → [`feedback/CURRENT.md`](./docs/feedback/CURRENT.md)
+
+**Documentation Update Rules:**
+- ✅ Agents can read all docs
+- ⚠️ Check YAML `access:` frontmatter before writing
+- 📝 Use templates from `MANIFEST.yaml`
+- 🔒 Architecture decisions require human approval
+
+---
+
+## 🛑 Stopping the Node
+
+To stop all services:
 
 ```bash
 docker compose down
-```
-
-```
 ```

@@ -66,9 +66,23 @@ class AuditLogProvider:
         except Exception as e:
             # Crucial: Audit logging should not crash the main application
             print(f"[AuditLog] WARNING: Failed to log event for {agent_name} ({operation}). Error: {e}")
+            
+            # Record error metric
+            try:
+                from src.services.metrics_service import MetricsService
+                MetricsService().record_error(agent_name, "audit_log_failure")
+            except:
+                pass
         finally:
             if conn:
                 await conn.close()
+                
+            # Record action metric (success or fail, we tried)
+            try:
+                from src.services.metrics_service import MetricsService
+                MetricsService().record_action(agent_name, operation)
+            except:
+                pass
 
 
 # Example of how to integrate this into src/main.py for demonstration:

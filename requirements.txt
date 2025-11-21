@@ -5,3 +5,11 @@ asyncpg
 redis
 python-dotenv
 rich
+ddgs
+agent-framework
+prometheus-client
+streamlit
+psutil
+chromadb
+fastapi
+uvicorn

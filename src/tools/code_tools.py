@@ -3,6 +3,7 @@ import io
 import contextlib
 import traceback
 from typing import Awaitable
+from src.tools.universal_tools import registry
 
 # We define the function as synchronous here for simplicity, but use an async wrapper
 # to satisfy the async CoreAgent requirement, which allows it to be called from the
@@ -43,6 +44,7 @@ def _execute_code_sync(code: str) -> str:
         return f"Execution Error: {type(e).__name__}: {str(e)}"
 
 # The 'execute_code' function signature must match the tool registry.
+@registry.register(roles=["ArtifactManager"])
 async def execute_code(code: str) -> str:
     """
     A robust, asynchronous wrapper for the code execution tool.

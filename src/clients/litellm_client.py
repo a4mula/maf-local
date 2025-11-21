@@ -68,7 +68,11 @@ class LiteLLMChatClient(IChatClient):
         # Add tool_choice only if tools are present
         if final_tools:
             if tool_choice:
-                payload["tool_choice"] = tool_choice
+                # Convert ToolMode enum to string if needed
+                if hasattr(tool_choice, 'value'):
+                    payload["tool_choice"] = tool_choice.value
+                else:
+                    payload["tool_choice"] = str(tool_choice)
             else:
                 payload["tool_choice"] = "auto"
 
@@ -82,27 +86,65 @@ class LiteLLMChatClient(IChatClient):
                     timeout=60.0
                 )
                 response.raise_for_status()
-            
-            response_data = response.json()
-            
-            if not response_data.get("choices"):
-                return "Error: Received an empty response from the LLM proxy."
-            
-            llm_response_message = response_data['choices'][0]['message']
+                data = response.json()
 
-            # 4. Check for tool calls
-            if llm_response_message.get("tool_calls"):
-                tool_call = llm_response_message["tool_calls"][0]
-                function_call = tool_call["function"]
-                # CRITICAL FIX: Include the tool_call["id"]
-                # New format: <call:tool_call_id|function_name:{"arg": "val"}>
-                return f"<call:{tool_call['id']}|{function_call['name']}:{function_call['arguments']}>"
-
-            # 5. Return text
-            return llm_response_message.get("content", "I am unable to generate a response.")
+            # 4. Return full response data for adapter to parse
+            return data
 
         except httpx.HTTPStatusError as e:
             error_detail = e.response.json().get('error', {}).get('message', str(e))
             return f"LiteLLM HTTP Error: {error_detail}"
         except Exception as e:
             return f"An unexpected error occurred in LiteLLMClient: {e}"
+
+    async def get_response(
+        self,
+        messages: str | Any | list[str] | list[Any],
+        *,
+        tools: Optional[list] = None,
+        tool_choice: Optional[Any] = None,
+        **kwargs: Any,
+    ) -> Any:
+        """
+        Adapter method to satisfy agent_framework.ChatClientProtocol.
+        Converts MAF SDK types to LiteLLM format and back.
+        """
+        from agent_framework import ChatMessage, ChatResponse
+        
+        # Normalize messages to List[Dict[str, str]]
+        history = []
+        if isinstance(messages, str):
+            history.append({"role": "user", "content": messages})
+        elif hasattr(messages, "role") and hasattr(messages, "text"): # ChatMessage
+            history.append({"role": str(messages.role), "content": messages.text})
+        elif isinstance(messages, list):
+            for msg in messages:
+                if isinstance(msg, str):
+                    history.append({"role": "user", "content": msg})
+                elif hasattr(msg, "role") and hasattr(msg, "text"): # ChatMessage
+                    history.append({"role": str(msg.role), "content": msg.text})
+        
+        # Call existing chat method
+        response_data = await self.chat(history, tools, tool_choice)
+        
+        if isinstance(response_data, str):
+             # Error occurred
+             return ChatResponse(text=f"Error: {response_data}")
+             
+        # Extract content from response_data
+        # OpenAI format: choices[0].message.content
+        try:
+            choice = response_data['choices'][0]
+            message = choice['message']
+            content = message.get('content')
+            
+            # Handle tool calls if present
+            # (For now, we just return text, but MAF might need tool calls in the response)
+            # If content is None (tool call only), we should probably handle that.
+            
+            if content is None:
+                content = ""
+                
+            return ChatResponse(text=content)
+        except (KeyError, IndexError):
+            return ChatResponse(text=str(response_data))

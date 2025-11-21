@@ -12,7 +12,7 @@ services:
           devices:
             - driver: nvidia
               count: 1
-              capabilities: [gpu]
+              capabilities: [ gpu ]
     restart: always
     networks:
       - maf-network
@@ -25,18 +25,18 @@ services:
     environment:
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       # CRITICAL FIX: Inject the Google API Key from the host's .env file
-      - GEMINI_API_KEY=${GEMINI_API_KEY} 
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - DATABASE_URL=postgresql://maf_user:maf_pass@maf-postgres:5432/maf_db
     volumes:
-      - /home/robb/projects/maf-local/litellm_config.yaml:/app/proxy_server_config.yaml:ro
-    command: ["--config", "/app/proxy_server_config.yaml"]
+      - ./config/litellm_config.yaml:/app/proxy_server_config.yaml:ro
+    command: [ "--config", "/app/proxy_server_config.yaml" ]
     depends_on:
       - ollama
       - postgres
     networks:
       - maf-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 http://localhost:4000/health/liveliness || exit 1"]
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 http://localhost:4000/health/liveliness || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -66,10 +66,88 @@ services:
     networks:
       - maf-network
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: maf-prometheus
+    ports:
+      - "9093:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - maf-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: maf-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - maf-network
+    depends_on:
+      - prometheus
+
+  ui:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ui
+    container_name: maf-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - LITELLM_URL=http://litellm:4000
+    volumes:
+      - ./src:/app/src
+    networks:
+      - maf-network
+    depends_on:
+      - litellm
+      - postgres
+
+  agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.agent
+    container_name: maf-agent
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://maf_user:maf_pass@maf-postgres:5432/maf_db
+      - LITELLM_URL=http://litellm:4000
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - OLLAMA_HOST=http://ollama:11434
+    volumes:
+      # Mount source code as READ-ONLY to enforce PoLA (Phase 10)
+      - ./src:/app/src:ro
+      - ./maf_artifacts:/app/maf_artifacts
+      # Project workspaces (Read-Write)
+      - ./workspaces:/workspaces:rw
+      # Temporary upgrade proposals (Read-Write)
+      - maf-devstudio-upgrades:/tmp/devstudio_upgrades:rw
+    networks:
+      - maf-network
+    depends_on:
+      - litellm
+      - postgres
+      - chromadb
+      - prometheus
+    tty: true
+    stdin_open: true
+
 volumes:
   ollama_data:
   postgres_data:
   chroma_data:
+  prometheus_data:
+  grafana_data:
+  maf-devstudio-upgrades:
+
 
 networks:
   maf-network:

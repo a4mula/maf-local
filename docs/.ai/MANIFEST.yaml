@@ -1,0 +1,387 @@
+# MAF Local Project Manifest
+
+# This file serves as the single source of truth for:
+# 1. Feature tracking (what's implemented, planned, in-progress)
+# 2. Documentation update templates
+# 3. Agent-facing configuration
+
+---
+access: read-only
+audience: agents
+update_trigger: feature_added | feature_completed | phase_change
+managed_by: DocUpdatePlanner tool
+---
+
+## Project Configuration
+
+project:
+  name: "MAF Local (Hierarchical DevStudio)"
+  version: "0.10.0"
+  description: "Multi-project IDE backend with hierarchical agent orchestration"
+  repository: "local"
+  
+stack:
+  language: "Python 3.10+"
+  frameworks:
+    - "Microsoft Agent Framework (MAF SDK)"
+    - "FastAPI"
+    - "Streamlit"
+    - "Next.js"
+  database:
+    - "PostgreSQL (governance, checkpoints)"
+    - "ChromaDB (vector memory)"
+  llm:
+    primary: "Ollama (local-first FOSS)"
+    fallback: "Gemini 2.0 Flash (via LiteLLM)"
+  infrastructure: "Docker"
+
+## Feature Status
+
+features:
+  # PHASE 10.1: MAF SDK Compliance (IN PROGRESS)
+  maf_sdk_compliance:
+    status: in_progress
+    phase: 10.1
+    priority: critical
+    description: "Refactor memory persistence to use MAF SDK Context Providers interface"
+    
+    deliverables:
+      - component: "ChromaDBContextProvider"
+        file: "src/persistence/chromadb_context_provider.py"
+        status: planned
+        
+      - component: "ContextRetrievalAgent refactor"
+        file: "src/agents/context_retrieval_agent.py"
+        status: planned
+    
+    affects:
+      architecture:
+        - path: "architecture/CURRENT.md"
+          change: "update_component_diagram"
+          description: "Add Context Provider layer"
+          
+      planning:
+        - path: "planning/CURRENT.md"
+          change: "update_status"
+          description: "Mark tasks complete as implemented"
+  
+  # PHASE 10: Multi-Project DevStudio (PLANNED)
+  multi_project_support:
+    status: planned
+    phase: 10
+    priority: high
+    blocked_by: ["maf_sdk_compliance"]
+    description: "Transform DevStudio from single-project to multi-project IDE backend with secure isolation"
+    
+    deliverables:
+      - component: "Project Registry"
+        file: "src/persistence/migrations/2025_11_21_project_registry.sql"
+        status: planned
+        
+      - component: "FileTreeReader Tool"
+        file: "src/tools/file_tree_reader.py"
+        status: planned
+        
+      - component: "Project API"
+        file: "src/api/project_api.py"
+        status: planned
+        endpoints:
+          - "GET /api/projects/list"
+          - "POST /api/sessions/start/{project_id}"
+          - "GET /api/sessions/current"
+    
+    affects:
+      guides:
+        - path: "guides/QUICKSTART.md"
+          change: "add_step"
+          location: "After Step 1"
+          description: "Add project selection step"
+          
+        - path: "guides/PROJECT_MANAGEMENT.md"
+          change: "create_new"
+          description: "Guide for creating and switching projects"
+      
+      architecture:
+        - path: "architecture/CURRENT.md"
+          change: "update_diagram"
+          description: "Show project isolation and registry"
+          
+        - path: "architecture/DECISIONS.md"
+          change: "add_adr"
+          description: "Document PoLA pivot and read-only source mount"
+      
+      planning:
+        - path: "planning/CURRENT.md"
+          change: "update_yaml"
+          description: "Mark Phase 10 as active when started"
+
+  # PHASE 9: Self-Contained Node (COMPLETED)
+  docker_formalization:
+    status: completed
+    phase: 9
+    completion_date: "2025-11-15"
+    description: "Containerized entire system with docker-compose"
+    
+    deliverables_completed:
+      - "docker-compose.yaml with all services"
+      - "scripts/start_node.sh for one-click deployment"
+      - "Optimized Dockerfiles for each service"
+
+  # PHASE 8: Bootstrap UI (COMPLETED)
+  streamlit_ui:
+    status: completed
+    phase: 8
+    completion_date: "2025-11-10"
+    description: "Added Streamlit chat interface and Next.js agent graph"
+    
+    deliverables_completed:
+      - "Streamlit app (port 8501)"
+      - "Next.js agent graph (port 3000)"
+      - "Real-time agent status API"
+
+  # PHASE 7: Observability (COMPLETED)
+  observability_layer:
+    status: completed
+    phase: 7
+    completion_date: "2025-11-05"
+    description: "Prometheus metrics and Grafana dashboards"
+
+  # PHASES 1-6: Foundation (COMPLETED)
+  agent_hierarchy:
+    status: completed
+    phase: 1
+    description: "4-tier agent hierarchy (Liaison → Project Lead → Domain Leads → Executors)"
+  
+  governance_layer:
+    status: completed
+    phase: 2
+    description: "Immutable audit trail, drift detection"
+  
+  checkpointing:
+    status: completed
+    phase: 3
+    description: "Durable, resumable workflows via MAF SDK"
+  
+  context_management:
+    status: completed
+    phase: 4
+    description: "RAG-powered context retrieval (ChromaDB + pgvector)"
+  
+  artifact_management:
+    status: completed
+    phase: 5
+    description: "Controlled file access and Git integration"
+  
+  provider_discovery:
+    status: completed
+    phase: 6
+    description: "Dynamic model routing (Ollama + Gemini via LiteLLM)"
+
+## Documentation Update Templates
+
+templates:
+  # Guides (merged tutorials + how-to)
+  guide:
+    create_new:
+      frontmatter: |
+        ---
+        type: guide
+        audience: [practitioner | all]
+        status: draft
+        last_updated: {date}
+        tags: {tags}
+        ---
+      
+      structure: |
+        # {title}
+        
+        {description}
+        
+        ## Prerequisites
+        - {prerequisites}
+        
+        ## Steps
+        {step_by_step_instructions}
+        
+        ## Verification
+        {how_to_verify_success}
+        
+        ## Troubleshooting
+        {common_issues_and_solutions}
+    
+    add_step:
+      template: |
+        ### Step {number}: {title}
+        
+        {description}
+        
+        ```{language}
+        {code_example}
+        ```
+        
+        **Verify:** {verification_command}
+
+  # Architecture documents
+  architecture:
+    update_current:
+      sections:
+        - "## System Overview"
+        - "## Components"
+        - "## Data Flow"
+        - "## Deployment"
+      
+      component_template: |
+        ### {component_name}
+        
+        **Purpose:** {one_line_description}
+        **Implementation:** {file_path}
+        **Dependencies:** {dependencies}
+        
+        {detailed_description}
+    
+    add_decision:
+      template: |
+        ## ADR-{number}: {title}
+        
+        **Date:** {date}
+        **Status:** {accepted | proposed | deprecated}
+        **Context:** {what_prompted_this_decision}
+        
+        **Decision:** {what_we_decided}
+        
+        **Consequences:**
+        - ✅ {positive_consequences}
+        - ⚠️ {trade_offs}
+
+  # Planning documents
+  planning:
+    update_current:
+      template: |
+        # CURRENT PHASE: {phase_name}
+        
+        **Phase ID:** {id}
+        **Status:** {emoji} {status}
+        **Started:** {date}
+        
+        ## Overview
+        {description}
+        
+        ## Task Breakdown
+        - [ ] Task 1
+        - [ ] Task 2
+        
+        ## Success Criteria
+        - [ ] Criterion 1
+    
+    archive_phase:
+      template: |
+        ## Phase {number}: {name} ✅ COMPLETED
+        
+        **Duration:** {duration} ({dates})
+        **Goal:** {one_sentence_goal}
+        
+        ### Key Deliverables
+        - {deliverable_1}
+        - {deliverable_2}
+        
+        ### Outcome
+        {final_state_summary}
+
+  # Feedback documents
+  feedback:
+    create_audit:
+      template: |
+        # Feedback: {topic}
+        
+        **Type:** Audit | Retrospective | Post-Mortem
+        **Date:** {date}
+        **Phase:** {phase}
+        
+        ## Executive Summary
+        {compliance_score_or_summary}
+        
+        ## Findings
+        ### ✅ Compliant / Successes
+        {what_went_well}
+        
+        ### ⚠️ Violations / Issues
+        {what_needs_fixing}
+        
+        ## Recommendations
+        1. {recommendation_1}
+        2. {recommendation_2}
+
+  # Why/Rationale documents
+  why:
+    add_rationale:
+      template: |
+        ## Why {decision_or_pattern}?
+        
+        **Context:** {background}
+        
+        **Problem:** {what_we_were_solving}
+        
+        **Solution:** {what_we_chose_and_why}
+        
+        **Trade-offs:**
+        - ✅ {benefits}
+        - ⚠️ {costs}
+        
+        **Alternatives Considered:** {what_we_rejected_and_why}
+
+## Agent Navigation Shortcuts
+
+quick_reference:
+  what_am_I_working_on: "planning/CURRENT.md"
+  what_happened_before: "planning/ARCHIVE.md"
+  why_does_this_exist: "why/RATIONALE.md"
+  how_do_I_do_X: "guides/"
+  what_is_the_system: "architecture/CURRENT.md"
+  why_was_X_decided: "architecture/DECISIONS.md"
+  what_needs_fixing: "feedback/CURRENT.md"
+  what_was_fixed: "feedback/ARCHIVE.md"
+  whats_the_vision: "vision/FUTURE.md"
+  reference_material: "research/INDEX.md"
+
+## Update Rules
+
+update_rules:
+  MANIFEST.yaml:
+    trigger: "Feature added, phase completed, or major config change"
+    who: "Agent via DocUpdatePlanner tool"
+    approval: "Human for major changes"
+  
+  planning/CURRENT.md:
+    trigger: "Phase starts, task completes, or status changes"
+    who: "Agent during execution"
+    approval: "Not required for status updates"
+  
+  planning/ARCHIVE.md:
+    trigger: "Phase completes"
+    who: "Agent during phase cleanup"
+    approval: "Not required"
+  
+  feedback/CURRENT.md:
+    trigger: "Audit received or feedback generated"
+    who: "Human or Agent"
+    approval: "Not required"
+  
+  architecture/CURRENT.md:
+    trigger: "Architecture changes (new components, services, data flows)"
+    who: "Agent after code changes"
+    approval: "Human review recommended"
+  
+  architecture/DECISIONS.md:
+    trigger: "Significant design decision made"
+    who: "Human or Agent (via ADR template)"
+    approval: "Human for critical decisions"
+  
+  why/RATIONALE.md:
+    trigger: "New 'why' question arises"
+    who: "Agent (append to existing sections)"
+    approval: "Not required"
+  
+  guides/*:
+    trigger: "New feature or process needs documentation"
+    who: "Agent via guide template"
+    approval: "Human review for user-facing guides"
