@@ -11,3 +11,4 @@ venv/
 maf-volumes/    # Large, local Docker volumes
 ollama/         # Ollama models are large
 litellm_logs/   # LiteLLM logs
+*.log           # Log files (agent.log, etc.)

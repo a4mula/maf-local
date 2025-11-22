@@ -30,74 +30,10 @@ function useHasMounted() {
     return hasMounted;
 }
 
-// Mock data for demonstration
+// Mock data removed. Initial state is empty.
 const initialGraphData: AgentGraphData = {
-    nodes: [
-        {
-            id: 'liaison',
-            name: 'Liaison',
-            tier: 'liaison',
-            status: 'active',
-            currentTask: 'Processing user request...',
-            metrics: { tokensUsed: 1250, timeInState: 5, messagesProcessed: 3 },
-        },
-        {
-            id: 'pl',
-            name: 'Project Lead',
-            tier: 'project-lead',
-            status: 'active',
-            currentTask: 'Creating workflow',
-            metrics: { tokensUsed: 3420, timeInState: 12, messagesProcessed: 7 },
-        },
-        {
-            id: 'dev-dl',
-            name: 'Dev DL',
-            tier: 'domain-lead',
-            status: 'active',
-            currentTask: 'Delegating tasks',
-            metrics: { tokensUsed: 890, timeInState: 8, messagesProcessed: 2 },
-        },
-        {
-            id: 'qa-dl',
-            name: 'QA DL',
-            tier: 'domain-lead',
-            status: 'idle',
-            currentTask: undefined,
-            metrics: { tokensUsed: 0, timeInState: 120, messagesProcessed: 0 },
-        },
-        {
-            id: 'docs-dl',
-            name: 'Docs DL',
-            tier: 'domain-lead',
-            status: 'idle',
-            currentTask: undefined,
-            metrics: { tokensUsed: 0, timeInState: 120, messagesProcessed: 0 },
-        },
-        {
-            id: 'exec-coder',
-            name: 'Coder',
-            tier: 'executor',
-            status: 'active',
-            currentTask: 'Writing auth.py',
-            metrics: { tokensUsed: 2100, timeInState: 45, messagesProcessed: 5 },
-        },
-        {
-            id: 'exec-tester',
-            name: 'Tester',
-            tier: 'executor',
-            status: 'idle',
-            currentTask: undefined,
-            metrics: { tokensUsed: 0, timeInState: 90, messagesProcessed: 0 },
-        },
-    ],
-    connections: [
-        { from: 'liaison', to: 'pl', message: 'Build auth API', active: true },
-        { from: 'pl', to: 'dev-dl', message: 'Plan assigned', active: true },
-        { from: 'pl', to: 'qa-dl', active: false },
-        { from: 'pl', to: 'docs-dl', active: false },
-        { from: 'dev-dl', to: 'exec-coder', message: 'Task: Create endpoints', active: true },
-        { from: 'dev-dl', to: 'exec-tester', active: false },
-    ],
+    nodes: [],
+    connections: [],
     lastUpdated: new Date().toISOString(),
 };
 
@@ -155,18 +91,25 @@ function calculateNodePosition(tier: string, index: number) {
 export default function AgentGraph() {
     const hasMounted = useHasMounted();
     const [graphData, setGraphData] = useState<AgentGraphData>(initialGraphData);
-    const [nodes, setNodes, onNodesChange] = useNodesState(convertToReactFlowNodes(initialGraphData));
-    const [edges, setEdges, onEdgesChange] = useEdgesState(convertToReactFlowEdges(initialGraphData));
+    const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     // Fetch agent data from API
     const fetchAgentData = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:8002/api/agents/status');
+            const apiUrl = process.env.NEXT_PUBLIC_AGENT_API_URL || 'http://localhost:8002';
+            const response = await fetch(`${apiUrl}/api/agents/status`);
             if (!response.ok) throw new Error('Failed to fetch agent status');
             const data = await response.json();
             setGraphData(data);
+            setError(null);
         } catch (error) {
             console.error('Failed to fetch agent data:', error);
+            setError('Failed to connect to Agent API');
+        } finally {
+            setIsLoading(false);
         }
     }, []);
 
@@ -178,34 +121,76 @@ export default function AgentGraph() {
 
     // Poll for updates every 2 seconds
     useEffect(() => {
+        fetchAgentData(); // Initial fetch
         const interval = setInterval(fetchAgentData, 2000);
         return () => clearInterval(interval);
     }, [fetchAgentData]);
 
+    if (!hasMounted) return null;
+
     return (
-        <div className="w-full h-screen bg-[#1a1a1a]">
-            <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                nodeTypes={nodeTypes}
-                fitView
-                minZoom={0.5}
-                maxZoom={1.5}
-            >
-                <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#333" />
-                <Controls className="!bg-gray-800 !border-gray-700" />
-            </ReactFlow>
+        <div className="w-full h-screen bg-[#1a1a1a] relative">
+            {/* Header Bar */}
+            <div className="absolute top-0 left-0 right-0 bg-gray-900 bg-opacity-90 p-4 border-b border-gray-800 z-10 flex justify-between items-center">
+                <h1 className="text-xl font-bold text-white">Hierarchical MAF Studio</h1>
+                <div className="flex gap-6 text-sm">
+                    <div className="flex items-center gap-2">
+                        <span className="text-gray-400">Project:</span>
+                        <span className="font-mono text-green-400">
+                            {(graphData as any).activeContext?.project_name || 'DevStudio (Self)'}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-gray-400">Session:</span>
+                        <span className="font-mono text-blue-400">
+                            {(graphData as any).activeContext?.session_name || 'None'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            {isLoading && nodes.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+                        <p>Connecting to Agent Neural Network...</p>
+                    </div>
+                </div>
+            ) : error ? (
+                <div className="flex items-center justify-center h-full text-red-400">
+                    <div className="text-center">
+                        <p className="text-xl mb-2">⚠️ Connection Lost</p>
+                        <p className="text-sm opacity-75">{error}</p>
+                    </div>
+                </div>
+            ) : (
+                <ReactFlow
+                    nodes={nodes}
+                    edges={edges}
+                    onNodesChange={onNodesChange}
+                    onEdgesChange={onEdgesChange}
+                    nodeTypes={nodeTypes}
+                    fitView
+                    minZoom={0.5}
+                    maxZoom={1.5}
+                    className="bg-[#1a1a1a]"
+                >
+                    <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#333" />
+                    <Controls className="!bg-gray-800 !border-gray-700" />
+                </ReactFlow>
+            )}
 
             {/* Status bar */}
-            <div className="absolute bottom-4 left-4 bg-gray-900 bg-opacity-90 px-4 py-2 rounded-lg text-sm">
-                <div className="flex items-center gap-4">
-                    <span>🟢 All Systems Operational</span>
-                    <span>|</span>
+            <div className="absolute bottom-4 left-4 bg-gray-900 bg-opacity-90 px-4 py-2 rounded-lg text-sm z-10">
+                <div className="flex items-center gap-4 text-gray-300">
+                    <span className={error ? "text-red-500" : "text-green-500"}>
+                        {error ? "🔴 Offline" : "🟢 Online"}
+                    </span>
+                    <span className="text-gray-600">|</span>
                     <span>Agents: {graphData.nodes.filter(n => n.status === 'active').length} Active</span>
-                    <span>|</span>
-                    <span>Last Updated: {hasMounted ? new Date(graphData.lastUpdated).toLocaleTimeString() : '--:--:--'}</span>
+                    <span className="text-gray-600">|</span>
+                    <span>Last Updated: {new Date(graphData.lastUpdated).toLocaleTimeString()}</span>
                 </div>
             </div>
         </div>

@@ -141,23 +141,73 @@
 
 ### Responsibilities
 - **Atomic Task Execution**: Execute single, well-defined tasks
-- **Code Implementation**: Write code per Domain Lead specifications
-- **Test Writing**: Create unit/integration tests
-- **Documentation Writing**: Create docs per template
+- **Artifact Generation**: Produce code, tests, and documentation as **output artifacts** (strings/data)
+- **Test Execution**: Run tests and return results to Domain Lead
+- **Code Analysis**: Search codebase and provide insights
 
 ### Boundaries
 - ❌ **Cannot**: Make decisions beyond immediate task
 - ❌ **Cannot**: Modify task scope
 - ❌ **Cannot**: Access DevStudio source code (Phase 10+)
-- ✅ **Can**: Read/write to assigned project directory
-- ✅ **Can**: Execute code in sandbox
-- ✅ **Can**: Run tests
+- ❌ **Cannot**: Write files to disk (produces artifacts that DL validates → PL approves → FileWriter executes)
+- ✅ **Can**: Read assigned project directory
+- ✅ **Can**: Execute code in sandbox (in-memory)
+- ✅ **Can**: Run tests and collect results
 - ✅ **Can**: Escalate uncertainty to Domain Lead
 
 ### Tools Available (scoped by domain)
-- **Dev Executor**: `read_file`, `write_file`, `execute_code`, `search_codebase`
-- **QA Executor**: `run_tests`, `read_test_results`, `write_test`
-- **Docs Executor**: `read_markdown`, `write_markdown`, `validate_frontmatter`
+- **Dev Executor**: `read_file`, `execute_code`, `search_codebase`, `analyze_dependencies`
+- **QA Executor**: `run_tests`, `read_test_results`, `analyze_coverage`
+- **Docs Executor**: `read_markdown`, `validate_frontmatter`, `check_links`
+
+**IMPORTANT:** Executors produce **artifacts** (code as strings, test results as JSON), not files on disk. All disk writes require:
+1. Executor generates artifact
+2. Domain Lead validates quality
+3. Project Lead approves for project fit
+4. FileWriterAgent executes write with approval token
+
+---
+
+## @file-writer (File Writer Agent)
+
+**Tech Stack:** Python, File System Tools, Audit Logger  
+**Model:** None (pure tool executor)
+
+### Responsibilities
+- **Disk Write Execution**: Write approved artifacts to project filesystem
+- **Path Validation**: Ensure writes are within project boundary
+- **Audit Logging**: Record all file operations to PostgreSQL
+- **Approval Enforcement**: Reject writes without valid PL token
+
+### Boundaries
+- ❌ **Cannot**: Generate code or make decisions
+- ❌ **Cannot**: Read files (not its role)
+- ❌ **Cannot**: Modify write scope or ignore approval tokens
+- ✅ **Can**: Execute `write_file(path, content, approval_token)` when token valid
+- ✅ **Can**: Validate paths are within project directory
+- ✅ **Can**: Log operations to audit trail
+
+### Tools Available
+- `write_file` (requires approval token from ProjectLead)
+- `validate_path` (internal: ensure path within project bounds)
+- `log_write_operation` (internal: audit trail to PostgreSQL)
+
+### Access Control Flow
+```
+Executor
+  ↓ [generates code artifact]
+Domain Lead
+  ↓ [validates quality: "meets dev standards?"]
+Project Lead
+  ↓ [approves: "fits project?", issues approval_token]
+FileWriterAgent
+  ↓ [validates token, writes to disk, logs audit]
+Filesystem
+```
+
+**Security:** Only agent with direct filesystem write access. All operations logged. Approval tokens prevent unauthorized writes.
+
+**Status:** ❌ NOT YET IMPLEMENTED (Phase 0 Fix 2 required)
 
 ---
 

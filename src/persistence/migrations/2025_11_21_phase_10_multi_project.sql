@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS projects (
     project_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
     description TEXT,
-    workspace_path VARCHAR(512) NOT NULL UNIQUE,
+    path VARCHAR(512) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(50) DEFAULT 'active',
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS projects (
 );
 
 -- 2. Insert DevStudio as Project 0 (read-only)
-INSERT INTO projects (project_id, name, description, workspace_path, metadata)
+INSERT INTO projects (project_id, name, description, path, metadata)
 VALUES (0, 'maf-local', 'DevStudio System (Read-Only)', '/app', '{"read_only": true}')
 ON CONFLICT (project_id) DO NOTHING;
 

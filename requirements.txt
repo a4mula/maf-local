@@ -13,3 +13,6 @@ psutil
 chromadb
 fastapi
 uvicorn
+nvidia-ml-py
+streamlit-tree-select
+watchdog

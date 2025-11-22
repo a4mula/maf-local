@@ -1,137 +1,398 @@
-# Current Phase
+# Current Phase: Architectural Re-Alignment
 
-**Last Updated:** 2025-11-21
+**Last Updated:** 2025-11-22  
+**Status:** � **CRITICAL DRIFT CORRECTION IN PROGRESS**
 
 ---
 
-## Phase 10: Multi-Project DevStudio
+## Overview
 
-**Status:** 🚀 **READY TO START**  
-**Estimated Duration:** 3-4 weeks  
-**Prerequisites:** ✅ Phase 10.1 (MAF SDK Compliance) completed
+Following the completion of the Host-Native Infrastructure Pivot (archived), we have **verified** the current state against the documented vision and identified significant architectural drift.
 
-### Overview
+**Current Reality:**
+- ✅ Infrastructure is operational (DB, AI models, UI running)
+- ✅ Projects can be created and managed
+- ❌ Agent hierarchy is not orchestrating workflows (just passing messages)
+- ❌ Violates Principle of Least Authority (PoLA)
+- ❌ Missing critical layers (Domain Leads, Executors as orchestrators)
 
-Transform Hierarchical MAF Studio from a **single-project system** (operating on its own codebase) into a **multi-project DevStudio service** that can manage external codebases while maintaining strict isolation from its own source code.
+**Target State (from `docs/vision/FUTURE.md`):**
+- Hierarchical Multi-Agent Framework with workflow orchestration
+- Strict role separation (Liaison talks, PL decides, DLs orchestrate, Executors execute)
+- PoLA enforcement (only approved agents write files)
 
-### Critical Security Requirement
+---
+
+## Critical Architectural Gaps
+
+Based on documentation review (`docs/.ai/agents.md`, `docs/vision/FUTURE.md`):
+
+### 1. **Agents as Chatbots, Not Orchestrators** 🔴
+
+**Problem:** 
+- `LiaisonAgent` and `ProjectLeadAgent` exist but only pass messages
+- No MAF Workflow Graph creation
+- No dynamic agent spawning
+- No task delegation
+
+**Impact:**
+- User says "start implementation" → Agent responds with text, no files created
+- Cannot break down complex tasks into workflows
+- No parallelization or checkpoint/resume capability
+
+**Required:**
+- Integrate MS Agent Framework `Workflow`, `WorkflowGraph`, `Executor` classes
+- Implement `ProjectLeadAgent.create_workflow()` method
+- Wire Domain Leads into workflow execution
+
+---
+
+### 2. **Missing FileWriterAgent** 🔴
+
+**Problem:**
+- Documentation (`docs/.ai/agents.md`) claims Executors have `write_file` tool
+- User clarified this is wrong:
+  - Executors produce **code artifacts** (strings)
+  - Domain Leads **validate** quality
+  - Project Lead **approves** write
+  - Specialized **FileWriterAgent** executes disk write
+
+**Impact:**
+- No clear path from "code generated" → "files on disk"
+- PoLA violated (agents accessing filesystem without approval workflow)
+
+**Required:**
+- Document `@file-writer` role in `docs/.ai/agents.md`
+- Implement `FileWriterAgent` class
+- Create approval workflow (Executor → DL → PL → FileWriter)
+
+---
+
+### 3. **PoLA Violations** 🟡
+
+**Problem:**
+- `LiaisonAgent` reads from `/app/project_root` (line 18 of `liaison_agent.py`)
+- `ProjectLeadAgent` reads from `/app/project_root` (line 18 of `project_lead_agent.py`)
+- Agents should have **zero** filesystem access except through approved tools
+
+**Impact:**
+- Confused Deputy Problem (agents could modify DevStudio source)
+- Violates security requirements from Phase 10
+
+**Required:**
+- Remove filesystem access from Liaison and PL
+- Context injection should come from approved Context Retrieval Agent
+- Only FileWriterAgent (with PL token) can write
+
+---
+
+### 4. **Domain Leads Not Wired** 🟡
+
+**Problem:**
+- `DevLeadAgent`, `QALeadAgent`, `DocsLeadAgent` classes exist
+- But they're never instantiated or invoked by ProjectLead
+- No workflow graph connects them
+
+**Impact:**
+- Cannot delegate domain-specific work
+- No validation layer between code generation and approval
+
+**Required:**
+- ProjectLead creates workflow nodes for each DL based on task requirements
+- DLs manage Executor pools
+- Results flow back up the hierarchy
+
+---
+
+### 5. **Agent Factory Configuration Antipatterns** 🟡
+
+**Problem (from full audit):**
+- Hardcoded `localhost` for ChromaDB instead of `settings.CHROMA_URL`
+- Incomplete hierarchical wiring (PL not connected to DLs, DLs not to Executors)
+- Missing agents not instantiated (FileWriterAgent, ArtifactManager)
+
+**Impact:**
+- Configuration drift from centralized settings
+- Breaks dependency injection principle
+- System cannot function as designed
+
+**Required:**
+- Use `settings.py` for all configuration
+- Complete hierarchical wiring
+- Instantiate all documented agents
+
+---
+
+### 6. **Infrastructure Fragility** 🟡
+
+**Problem (from full audit):**
+- `start_node.sh` uses `sleep 10` instead of health checks
+- Runs migrations in `agent` container (contradicts Host-Native design)
+- Hardcoded security defaults (`sk-1234`, `maf_user:maf_pass`)
+
+**Impact:**
+- Services may not be ready after 10 seconds
+- Architectural contradiction (script expects containerized agent)
+- Security vulnerabilities in default configuration
+
+**Required:**
+- Implement Docker health checks or `wait-for-it.sh`
+- Update `start_node.sh` for Host-Native model
+- Generate random security keys on first run
+
+---
+
+### 7. **Security Vulnerabilities** 🔴
+
+**Problem (from full audit):**
+- `code_tools.py` uses unchecked `exec()` (RCE risk)
+- Audit log currently disabled
+- No sandboxing for code execution
+
+**Impact:**
+- Malicious code could compromise system
+- No audit trail for debugging
+- Fails enterprise governance mandate
+
+**Required:**
+- Replace `exec()` with containerized execution or secure sandbox
+- Enable audit logging
+- Implement security boundaries
+
+---
+
+## Bright Spots: Strong Implementations
+
+> [!NOTE]
+> Not everything is broken. The full audit identified several **excellent** components that demonstrate high-quality engineering:
+
+### ✅ World-Class Components
+
+1. **`chromadb_context_provider.py`** (Memory Persistence)
+   - Perfect MAF SDK compliance
+   - Excellent async I/O wrapping
+   - Critical project isolation implementation
+
+2. **`project_context.py`** (Multi-Project Foundation)
+   - Concurrency-safe using `contextvars`
+   - Strict enforcement (RuntimeError on missing context)
+   - Clean `@asynccontextmanager` pattern
+
+3. **`universal_tools.py`** (Tool System)
+   - Sophisticated framework-agnostic design
+   - Built-in PoLA enforcement via roles
+   - Advanced schema extraction for LLM reasoning
+
+4. **`governance_agent.py`** (Audit Layer)
+   - Textbook async database implementation
+   - Perfect separation of concerns
+   - Immutability principle enforced
+
+5. **`context_retrieval_agent.py`** (RAG)
+   - Clean dependency injection
+   - MAF SDK compliant
+   - Resolves Phase 10.1 compliance audit
+
+### Key Insight from Full Audit
+
+> **"The project is a strong structural prototype of a MAF architecture, but it fails on critical implementation details necessary for enterprise readiness."**
+
+The audit reveals a **paradox**: The foundation is solid (persistence, context management, tool system), but the execution layer (LLM adapter, delegation, file I/O) is incomplete or broken.
+
+**Metaphor:** "The shape of a car (class hierarchy, interfaces) exists, but the engine and steering wheel (Tool Client, Delegation, Execution) are missing or broken."
+
+---
+
+## Re-Alignment Plan
+
+### Phase 0: Critical Infrastructure Fixes (🔴 BLOCKING)
 
 > [!CAUTION]
-> **Current Violation: Confused Deputy Problem**
-> 
-> Agents currently have **write access** to their own source code (`/home/robb/projects/maf-local`). This violates the Principle of Least Authority (PoLA) and creates a **Confused Deputy Problem**.
+> **These issues prevent ANY tool execution.** Must be resolved before workflow orchestration.
 
-**Phase 10 Must:**
-- ✅ Make DevStudio source code **read-only** to agents
-- ✅ Isolate each managed project in separate workspaces
-- ✅ Implement `project_id` scoping across all persistence layers
+Based on comprehensive architecture audit (`feedback/CURRENT.md`), the following technical gaps block all agent functionality:
 
-### Goals
+#### Fix 1: LLM Adapter Tool Call Parsing (🛑 HIGHEST PRIORITY)
 
-1. **Project Workspace Isolation**
-   - Each project gets isolated Docker volume
-   - DevStudio source code mounted read-only
-   - Agents operate in `/workspace/{project_id}/` only
+**Problem:** `litellm_client.py` cannot parse and execute tool calls from LLM response  
+**Impact:** Agents cannot use ANY tools, even if properly defined  
+**Root Cause:** Missing tool call extraction and dispatch logic
 
-2. **Session Management**
-   - FastAPI endpoints: `/api/projects/list`, `/api/sessions/start/{project_id}`
-   - PostgreSQL schema: `sessions` table with `project_id` foreign key
-   - Session lifecycle: create → active → paused → archived
+**Tasks:**
+- [ ] Implement tool call parsing in `src/clients/litellm_client.py`
+- [ ] Add function call result injection back to LLM
+- [ ] Test with simple tool (e.g., `get_time()`)
 
-3. **Context Scoping**
-   - All ChromaDB queries filter by `project_id`
-   - PostgreSQL audit logs include `project_id`
-   - Prevent cross-project context bleed
-
-4. **UI Updates**
-   - Streamlit: Project selector dropdown
-   - Next.js Graph: Switch between project visualizations
-   - Session status indicators
-
-### Task Breakdown
-
-#### Milestone 1: Foundation & 2-Project POC (✅ Completed)
-- [x] **Database Schema Updates**
-  - [x] Create `projects` table (Project 0 = DevStudio)
-  - [x] Create `sessions` table
-  - [x] Add `project_id` to `audit_logs`, `governance`, `checkpoints`
-- [x] **Docker Configuration**
-  - [x] Mount `/app` as read-only (`:ro`)
-  - [x] Add volumes for workspaces and upgrades
-- [x] **Context Management**
-  - [x] Create `project_context.py` (Thread-local storage)
-  - [x] Update `ChromaDBContextProvider` to inject `project_id`
-- [x] **Verification**
-  - [x] Create `tests/integration/test_project_isolation.py`
-  - [x] Verify read-only enforcement (via tests)
-  - [x] Verify ChromaDB isolation (via tests)
-
-#### Milestone 2: Dynamic Project Registration (Next)
-- [ ] Create `src/services/project_service.py`
-- [ ] Implement `register_project()` API
-- [ ] Create `ProjectManager` agent tool
+**Success Criteria:** Agent can successfully invoke and use a basic tool
 
 ---
 
-## Risk Assessment
+#### Fix 2: Secure File I/O Implementation (🛑 CRITICAL)
 
-| Risk | Likelihood | Impact | Mitigation |
-|:---|:---:|:---:|:---|
-| MAF SDK interface changes | Low | High | Pin SDK version, monitor changelog |
-| Performance degradation | Medium | Low | Benchmark before/after, optimize provider |
-| Breaking existing workflows | Low | Medium | Comprehensive integration tests |
+**Problem:** `code_tools.py` has no secure file writing tool  
+**Impact:** System cannot write code, poses RCE risk  
+**Root Cause:** Stubbed implementation
+
+**Tasks:**
+- [ ] Create sandboxed `write_file` tool in `src/tools/code_tools.py`
+- [ ] Implement path validation (must be within project directory)
+- [ ] Add audit logging to PostgreSQL
+- [ ] Require approval token from ProjectLead
+
+**Success Criteria:** Can write file with PL approval, rejects unauthorized writes
+
+---
+
+#### Fix 3: Agent Delegation System (⚠️ HIGH PRIORITY)
+
+**Problem:** `communication_tools.py` has `send_message` stub  
+**Impact:** ProjectLead cannot delegate to Domain Leads  
+**Root Cause:** Incomplete implementation
+
+**Tasks:**
+- [ ] Implement `send_message` tool
+- [ ] Wire ProjectLead → DomainLead communication
+- [ ] Add message routing in agent factory
+
+**Success Criteria:** ProjectLead can send task to DevLead and receive response
+
+---
+
+#### Fix 4: Async I/O Violations (⚠️ MEDIUM PRIORITY)
+
+**Problem:** `liaison_agent.py` and `project_lead_agent.py` use synchronous `os.walk`  
+**Impact:** Blocks async event loop during startup  
+**Root Cause:** Synchronous file I/O in async context
+
+**Tasks:**
+- [ ] Replace `os.walk` with async alternatives or move to background thread
+- [ ] Use ContextRetrievalAgent for file tree (already async)
+- [ ] Remove direct filesystem access (PoLA violation)
+
+**Success Criteria:** No blocking I/O in agent initialization
+
+---
+
+### Phase 1: Document the Truth (✅ COMPLETED)
+- [x] Archive completed infrastructure work
+- [x] Create this CURRENT.md to reflect honest reality
+- [x] Integrate comprehensive audit findings as Phase 0
+- [ ] Update `docs/.ai/agents.md` to add FileWriter Agent spec
+- [ ] Update `docs/architecture/CURRENT.md` to reflect current state
+
+---
+
+### Phase 2: Workflow Architecture (BLOCKED BY PHASE 0)
+
+> [!NOTE]
+> Cannot proceed until Phase 0 fixes are complete (tools must work first)
+
+#### Milestone 1: FileWriterAgent \u0026 Approval Workflow
+**Goal:** Close the loop from code generation to disk write
+
+**Tasks:**
+- [ ] Create `src/agents/file_writer_agent.py`
+  - Tool: `write_file(path, content, approval_token)`
+  - Validation: Requires PL-signed approval token
+  - Audit: Logs all writes to PostgreSQL
+- [ ] Update ProjectLead to issue approval tokens
+- [ ] Create approval workflow test case
+
+**Success Criteria:**
+- User says "create README" → Executor generates → DL validates → PL approves → FileWriter writes
+- No agent can write without PL approval
+
+#### Milestone 2: Workflow Orchestration Integration
+**Goal:** Move from message-passing to workflow execution
+
+**Tasks:**
+- [ ] Import MAF SDK `Workflow`, `WorkflowGraph` into ProjectLeadAgent
+- [ ] Implement `ProjectLeadAgent.create_workflow(idea: str) -> WorkflowGraph`
+- [ ] Parse idea to determine required pillars (Dev? QA? Docs?)
+- [ ] Add workflow nodes for each Domain Lead
+- [ ] Execute graph and collect results
+
+**Success Criteria:**
+- ProjectLead.receive_idea() returns a Workflow execution, not a text response
+- Workflow can be paused, checkpointed, and resumed
+
+#### Milestone 3: Domain Lead Orchestration
+**Goal:** DLs manage Executor pools, not just validate
+
+**Tasks:**
+- [ ] Update `DevLeadAgent` to spawn `CoderAgent` dynamically
+- [ ] Implement task queue for Executors
+- [ ] Return validated results to ProjectLead
+
+**Success Criteria:**
+- DevLead breaks "implement feature X" into 3 CoderAgent tasks
+- Each task executes in parallel (if possible)
+- Results are validated before returning to PL
+
+#### Milestone 4: PoLA Enforcement
+**Goal:** Remove filesystem access from all agents except FileWriter
+
+**Tasks:**
+- [ ] Remove `os.walk` and `os.path.exists` from LiaisonAgent
+- [ ] Remove filesystem access from ProjectLeadAgent
+- [ ] Context injection via ContextRetrievalAgent only
+- [ ] Verification test: grep for direct file access
+
+**Success Criteria:**
+- Zero direct filesystem imports in Liaison/PL/DL code
+- All file reads go through approved Context Retrieval Agent
+- All file writes go through FileWriterAgent with approval
+
+---
+
+## Feedback Integration
+
+From `docs/feedback/CURRENT.md`:
+- ✅ MAF SDK Compliance is complete (Phase 10.1)
+- 🚧 Documentation Architecture redesign is in progress
+- ⚠️ No mentioned feedback about agent drift (this is new finding)
+
+**Action:** Once Milestone 1 (FileWriterAgent) is complete, add feedback entry to document the "chatbot drift" issue and resolution.
 
 ---
 
 ## Dependencies
 
 **Blocks:**
-- Phase 10: Multi-Project DevStudio implementation
-- Enterprise MAF deployment readiness
+- Full multi-project management (can't scaffold projects without workflow orchestration)
+- Enterprise deployment (PoLA violations must be resolved)
+- Autonomous agents (need approval workflows, not direct file access)
 
 **Blocked By:**
-- None (ready to start)
+- None (all infrastructure is in place, this is pure implementation)
 
 **Related:**
-- [MAF SDK Compliance Audit](../feedback/CURRENT.md#maf-sdk-compliance)
-- [MAF SDK Standards](../research/maf_sdk_standards.md)
-- [Project Guidelines](../.ai/GUIDELINES.md) - Updated with MAF standards
+- [Vision: Hierarchical MAF Studio](../vision/FUTURE.md#the-hierarchical-maf-studio-ideal-state)
+- [Agent Roles](../.ai/agents.md)
+- [Architecture: Current State](../architecture/CURRENT.md)
+- [Infrastructure Pivot Archive](./ARCHIVE.md#phase-10-multi-project-devstudio---infrastructure-pivot--completed)
 
 ---
 
-## Progress Tracking
+## Success Metrics
 
-### Completed
-- ✅ Documentation identity correction (Modular → Microsoft)
-- ✅ Comprehensive code compliance audit
-- ✅ Project guidelines updated with MAF SDK standards
-- ✅ Implementation plan created
-- ✅ **Milestone 1: Foundation & 2-Project POC**
+**When This Phase is Complete:**
+1. ✅ User can say "build a game" and agents scaffold project structure automatically
+2. ✅ All file writes require PL approval (zero rogue writes)
+3. ✅ Workflow graphs visible in UI (Live Graph shows orchestration)
+4. ✅ Documentation matches reality (no drift between vision and implementation)
 
-### In Progress
-- 🚧 **Milestone 2: Dynamic Project Registration**
-
-### Pending
-- ⏳ Refactoring `ContextRetrievalAgent`
-- ⏳ Integration testing
-- ⏳ Documentation updates
-
----
-
-## When Complete
-
-Upon successful completion of this phase:
-
-1. **Archive**: Summarize this phase and add to [`ARCHIVE.md`](./ARCHIVE.md)
-2. **Update Current**: Mark Phase 10.1 as complete, update for Phase 10 proper
-3. **Update Architecture**: Reflect changes in [`architecture/CURRENT.md`](../architecture/CURRENT.md)
-4. **Proceed**: Begin Phase 10 implementation with full MAF SDK compliance
+**Archive Criteria:**
+- All 4 milestones complete
+- PoLA verification tests passing
+- User can successfully create and run a multi-phase project workflow
 
 ---
 
 ## Quick Links
 
-- **Audit Report**: [MAF SDK Compliance Audit](../feedback/CURRENT.md#maf-sdk-compliance)
-- **Implementation**: [Detailed Implementation Plan](./implementations/maf_sdk_compliance_implementation.md)
-- **Standards**: [MAF SDK Reference](../research/maf_sdk_standards.md)
-- **Architecture**: [Current State](../architecture/CURRENT.md)
+- **Vision**: [Hierarchical MAF Studio (FUTURE.md)](../vision/FUTURE.md)
+- **Agent Specs**: [agents.md](../.ai/agents.md)
+- **Architecture**: [CURRENT.md](../architecture/CURRENT.md)
+- **Completed Work**: [ARCHIVE.md](./ARCHIVE.md)
+- **Feedback**: [feedback/CURRENT.md](../feedback/CURRENT.md)

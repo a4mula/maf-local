@@ -75,52 +75,67 @@ GEMINI_API_KEY=your_gemini_api_key_here     # Get from https://aistudio.google.c
 
 ---
 
-## Step 3: Start the Stack
+## Step 3: Start Infrastructure Services
 
-Run the automated startup script:
+First, start the Docker infrastructure services:
 
 ```bash
-./scripts/start_node.sh
+docker compose up -d
 ```
 
-This script will:
-1. Build all Docker images (Agent, UI, LiteLLM)
-2. Pull the Ollama Llama 3.1 model (~4.7GB)
-3. Start all services (PostgreSQL, ChromaDB, Prometheus, Grafana, Streamlit, Next.js)
-4. Apply database migrations
-
-**Expected output:**
-```
-✅ Building maf-agent container...
-✅ Building maf-ui container...
-✅ Pulling Llama 3.1 8B model...
-✅ Starting services...
-✅ All services running!
-```
+This starts the backend services:
+- PostgreSQL (database)
+- Ollama (local LLM - pulls Llama 3.1 8B model ~4.7GB on first run)
+- ChromaDB (vector store)
+- LiteLLM (unified AI gateway)
+- Prometheus + Grafana (observability)
 
 **First run:** Takes 5-10 minutes (model download)  
 **Subsequent runs:** ~30 seconds
 
+Wait for services to be ready:
+```bash
+# Watch until all services show "healthy" or "running"
+docker compose ps
+```
+
 ---
 
-## Step 4: Verify Services
+## Step 4: Start the MAF Studio Application
 
-Check that all containers are running:
+Run the Host-Native startup script:
+
+```bash
+./run_studio.sh
+```
+
+This script will:
+1. Create/activate Python virtual environment (`.venv`)
+2. Install dependencies from `requirements.txt`
+3. Set environment variables for localhost services
+4. Start Agent API (background on port 8002)
+5. Start Streamlit UI (foreground on port 8501)
+
+> [!NOTE]
+> **Host-Native Architecture:** The Agent and UI run natively on your host (not in containers) for better performance and direct file access.
+
+---
+
+## Step 5: Verify Services
+
+Check that Docker infrastructure is running:
 
 ```bash
 docker ps
 ```
 
 You should see these containers:
-- `maf-agent` (port 8002)
-- `maf-ui` (port 8501)
-- `ui-next` (port 3000)
 - `maf-ollama` (port 11434)
 - `maf-litellm` (port 4000)
 - `maf-postgres` (port 5432)
 - `maf-chroma` (port 8000)
 - `prometheus` (port 9093)
-- `grafana` (port 3001)
+- `grafana` (port 3000)
 
 ---
 
@@ -175,11 +190,16 @@ I want to add a new REST API endpoint that returns the current system status.
 ```
 
 **What happens:**
-- Liaison asks clarifying questions if needed
 - Liaison classifies as "Idea"  
-- Project Lead creates a workflow
-- Project Lead delegates to Development Domain Lead
-- (Implementation would follow if we had code execution enabled)
+- Liaison forwards to Project Lead
+- Project Lead analyzes the request
+- Project Lead stores a decision in the governance database
+- **Project Lead responds with analysis** (text response)
+
+> [!IMPORTANT]
+> **Current Limitation:** Agents currently function as "intelligent chatbots" that analyze and respond to ideas, but do **not yet** autonomously implement workflows or generate code files.
+>
+> See [`docs/planning/CURRENT.md`](../planning/CURRENT.md) for the re-alignment plan to enable full autonomous development.
 
 ---
 
@@ -238,10 +258,11 @@ docker exec maf-litellm env | grep GEMINI_API_KEY
 
 Now that you're up and running:
 
-1. **Explore the Architecture**: Read [Current State](../architecture/CURRENT_STATE.md)
-2. **Learn the Workflow**: See [How to Deploy](../how-to/deploy_with_docker.md)
-3. **Understand the Vision**: Read [Ideal State](../vision/ideal_state.md)
-4. **Dive into Code**: Browse `src/agents/` to see agent implementations
+1. **Explore the Architecture**: Read [Current Architecture](../architecture/CURRENT.md)
+2. **Learn the Deployment**: See [Deployment Guide](./DEPLOYMENT.md)
+3. **Understand the Vision**: Read [Future Vision](../vision/FUTURE.md)
+4. **Review Current Work**: See [Planning](../planning/CURRENT.md)
+5. **Dive into Code**: Browse `src/agents/` to see agent implementations
 
 ---
 

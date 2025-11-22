@@ -19,6 +19,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include Routers
+from src.api.routes import projects, sessions
+app.include_router(projects.router)
+app.include_router(sessions.router)
+
 # Global reference to the agent hierarchy (set during startup)
 agent_hierarchy = None
 
@@ -40,6 +45,27 @@ async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "service": "maf-agent-api"}
 
+# Global active context for visualization (Project/Session)
+active_context = {
+    "project_id": 0,
+    "project_name": "DevStudio (Self)",
+    "session_id": None,
+    "session_name": None
+}
+
+class ContextUpdate(BaseModel):
+    project_id: int
+    project_name: str
+    session_id: Optional[int] = None
+    session_name: Optional[str] = None
+
+@app.post("/api/context")
+async def update_context(ctx: ContextUpdate):
+    """Update the global active context for visualization."""
+    global active_context
+    active_context = ctx.dict()
+    return {"status": "updated", "context": active_context}
+
 @app.get("/api/agents/status")
 async def get_agent_status():
     """
@@ -50,6 +76,7 @@ async def get_agent_status():
         return {
             "nodes": [],
             "connections": [],
+            "activeContext": active_context,
             "lastUpdated": datetime.utcnow().isoformat()
         }
 
@@ -105,6 +132,7 @@ async def get_agent_status():
     return {
         "nodes": nodes,
         "connections": connections,
+        "activeContext": active_context,
         "lastUpdated": datetime.utcnow().isoformat()
     }
 
@@ -119,6 +147,7 @@ async def chat(request: ChatRequest):
     liaison_agent = agent_hierarchy["liaison"]
     
     try:
+        # TODO: Inject session_id into agent context here if needed
         response = await liaison_agent.handle_user_message(request.message)
         return ChatResponse(
             response=response,
@@ -136,6 +165,7 @@ async def root():
         "endpoints": {
             "health": "/health",
             "chat": "/chat (POST)",
-            "status": "/api/agents/status"
+            "status": "/api/agents/status",
+            "context": "/api/context (POST)"
         }
     }

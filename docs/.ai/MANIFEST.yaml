@@ -33,76 +33,36 @@ stack:
   llm:
     primary: "Ollama (local-first FOSS)"
     fallback: "Gemini 2.0 Flash (via LiteLLM)"
-  infrastructure: "Docker"
+  infrastructure: "Docker (infra) + Host (app)"
+  deployment_model: "Host-Native Runtime"
 
 ## Feature Status
 
 features:
-  # PHASE 10.1: MAF SDK Compliance (IN PROGRESS)
+  # PHASE 10.1: MAF SDK Compliance (COMPLETED)
   maf_sdk_compliance:
-    status: in_progress
+    status: completed
     phase: 10.1
     priority: critical
+    completed_date: "2025-11-21"
     description: "Refactor memory persistence to use MAF SDK Context Providers interface"
     
     deliverables:
       - component: "ChromaDBContextProvider"
         file: "src/persistence/chromadb_context_provider.py"
-        status: planned
+        status: completed
         
       - component: "ContextRetrievalAgent refactor"
         file: "src/agents/context_retrieval_agent.py"
-        status: planned
+        status: completed
     
-    affects:
-      architecture:
-        - path: "architecture/CURRENT.md"
-          change: "update_component_diagram"
-          description: "Add Context Provider layer"
-          
-      planning:
-        - path: "planning/CURRENT.md"
-          change: "update_status"
-          description: "Mark tasks complete as implemented"
+    outcome: "100% MAF SDK compliance achieved (up from 70%)"
+    archived: "docs/planning/ARCHIVE.md#phase-101-maf-sdk-compliance-refactoring"
   
-  # PHASE 10: Multi-Project DevStudio (PLANNED)
-  multi_project_support:
-    status: planned
+  # PHASE 10: Multi-Project DevStudio - Infrastructure Pivot (COMPLETED)
+  infrastructure_pivot:
+    status: completed
     phase: 10
-    priority: high
-    blocked_by: ["maf_sdk_compliance"]
-    description: "Transform DevStudio from single-project to multi-project IDE backend with secure isolation"
-    
-    deliverables:
-      - component: "Project Registry"
-        file: "src/persistence/migrations/2025_11_21_project_registry.sql"
-        status: planned
-        
-      - component: "FileTreeReader Tool"
-        file: "src/tools/file_tree_reader.py"
-        status: planned
-        
-      - component: "Project API"
-        file: "src/api/project_api.py"
-        status: planned
-        endpoints:
-          - "GET /api/projects/list"
-          - "POST /api/sessions/start/{project_id}"
-          - "GET /api/sessions/current"
-    
-    affects:
-      guides:
-        - path: "guides/QUICKSTART.md"
-          change: "add_step"
-          location: "After Step 1"
-          description: "Add project selection step"
-          
-        - path: "guides/PROJECT_MANAGEMENT.md"
-          change: "create_new"
-          description: "Guide for creating and switching projects"
-      
-      architecture:
-        - path: "architecture/CURRENT.md"
           change: "update_diagram"
           description: "Show project isolation and registry"
           

@@ -2,7 +2,85 @@
 
 ---
 
+## Phase 10: Multi-Project DevStudio - Infrastructure Pivot ✅ COMPLETED
+
+**Duration:** 1 day (2025-11-22)  
+**Goal:** Pivot from containerized application to host-native runtime + establish multi-project foundation  
+**Trigger:** Docker friction, permission issues, path mapping complexity
+
+### Context
+
+The original Phase 10 Milestone 1 was partially completed (database schema), but revealed fundamental architectural issues:
+- Docker volume mounting created permission hell (UID/GID mismatches)
+- Path confusion (`/workspaces` in container vs `/home/robb/projects` on host)
+- Agent GUI and API needed restart to mount new project folders
+- Violated "IDE-like" UX expectations
+
+### Strategic Decision: Host-Native Runtime
+
+Following architectural review comparison to VS Code and Antigravity, pivoted to:
+- **Infrastructure in Docker**: PostgreSQL, Ollama, ChromaDB, LiteLLM (hard to install, benefit from isolation)
+- **Application on Host**: Agent API and Streamlit UI run natively (Python venv)
+- **Direct File Access**: No volume mount complexity, native permissions
+
+### Key Deliverables
+
+1. **Host-Native Startup Script** ([`run_studio.sh`](file:///home/robb/projects/maf-local/run_studio.sh))
+   - Creates/activates Python `.venv`
+   - Installs `requirements.txt`
+   - Sets environment variables (localhost URLs)
+   - Launches Agent API (background) + Streamlit UI (foreground)
+
+2. **Docker Compose Refactor** ([`docker-compose.yaml`](file:///home/robb/projects/maf-local/docker-compose.yaml))
+   - Removed `maf-ui` and `maf-agent` services
+   - Exposed ports: PostgreSQL (5432), Ollama (11434), ChromaDB (8000), LiteLLM (4000)
+   - Infrastructure-only (6 services)
+
+3. **Database Schema Completion**
+   - Created `governance_decisions` table (with `category` column per code expectations)
+   - Created `workflow_checkpoints` table (proper schema)
+   - Created `projects` table (with `path` column, not `workspace_path`)
+   - Ran migrations: `2025_11_20_governance.sql`, `2025_11_20_checkpoints.sql`, `2025_11_21_phase_10_multi_project.sql`
+
+4. **UI Redesign** ([`src/ui/streamlit_app.py`](file:///home/robb/projects/maf-local/src/ui/streamlit_app.py))
+   - Project dropdown with "➕ New Project..." option
+   - Collapsible file tree using `streamlit-tree-select`
+   - Project creation auto-generates sibling paths (`../MyNewApp`)
+   - Fixed `project_id` vs `id` key mismatches throughout
+
+5. **Project Service** ([`src/services/project_service.py`](file:///home/robb/projects/maf-local/src/services/project_service.py))
+   - Auto-creates project directories (`os.makedirs`)
+   - Stores projects in PostgreSQL
+   - Path validation and normalization
+
+### Technical Improvements
+
+- ✅ **Zero Permission Issues**: Agent runs as host user
+- ✅ **Native Paths**: `/home/robb/projects/MyProject` (no translation layer)
+- ✅ **No Container Restart**: Create projects without rebuilding
+- ✅ **IDE-like UX**: File explorer shows real host files
+- ✅ **Dependency Management**: `requirements.txt` + `streamlit-tree-select`
+
+### Verification
+
+- ✅ Project creation works (`/home/robb/projects/Test` created successfully)
+- ✅ Database schema complete (all migrations applied)
+- ✅ Agent responds without errors (governance tables exist)
+- ✅ UI File Explorer displays project structure
+
+### Known Limitations (Deferred to Next Phase)
+
+- ⚠️ **Agents are Chatbots**: LiaisonAgent and ProjectLeadAgent pass messages, not workflows
+- ⚠️ **No Workflow Orchestration**: MAF Workflow Graph not integrated
+- ⚠️ **No Domain Leads**: Classes exist but not instantiated or wired
+- ⚠️ **No Executors**: Task execution layer missing
+- ⚠️ **PoLA Violation**: Liaison/PL access filesystem directly (should be read-only)
+
+---
+
 ## Phase 10.1: MAF SDK Compliance Refactoring ✅ COMPLETED
+
+
 
 **Duration:** 3 hours (2025-11-21)  
 **Goal:** Refactor memory persistence to comply with MAF SDK Context Provider pattern  

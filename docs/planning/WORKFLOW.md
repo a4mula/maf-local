@@ -51,7 +51,7 @@ flowchart TD
 
 ### 2. Current Phase Tracking
 
-**File:** [`docs/planning/CURRENT_PHASE.md`](../../../docs/planning/CURRENT_PHASE.md)
+**File:** [`docs/planning/CURRENT.md`](../planning/CURRENT.md)
 
 **Purpose:** Track the active phase with clear status and success criteria.
 
@@ -72,7 +72,7 @@ flowchart TD
 
 ### 3. Implementation Plan
 
-**Files:** `docs/planning/*_implementation.md`
+**Files:** `docs/planning/implementations/*.md`
 
 **Purpose:** Convert feedback/audits into actionable technical plan.
 
@@ -103,7 +103,7 @@ Breaking changes or design decisions
 ```
 
 **Example:**
-- [`maf_sdk_compliance_implementation.md`](../../../docs/planning/maf_sdk_compliance_implementation.md)
+- Implementation plans in `docs/planning/implementations/`
 
 **Output:** Concrete file-level changes and test plan
 
@@ -114,7 +114,7 @@ Breaking changes or design decisions
 **Purpose:** Implement the plan.
 
 **Tracking:**
-- Update `CURRENT_PHASE.md` checkboxes as tasks complete
+- Update `CURRENT.md` checkboxes as tasks complete
 - Mark items in artifact `task.md` (ephemeral, agent-specific)
 
 **Artifacts Created:**
@@ -129,28 +129,28 @@ Breaking changes or design decisions
 **When Phase Complete:**
 
 1. **Update Architecture Docs:**
-   - [`docs/architecture/CURRENT_STATE.md`](../../../docs/architecture/CURRENT_STATE.md)
-   - [`docs/.ai/feature_manifest.yaml`](../../../docs/.ai/feature_manifest.yaml)
+   - [`docs/architecture/CURRENT.md`](../architecture/CURRENT.md)
+   - [`docs/.ai/MANIFEST.yaml`](../.ai/MANIFEST.yaml)
 
 2. **Resolve Related Issues:**
    - Mark audit findings as resolved
    - Update compliance documents
 
-3. **Update Roadmap:**
-   - [`docs/planning/roadmap.md`](../../../docs/planning/roadmap.md) - Mark phase complete
+3. **Update Planning:**
+   - Mark phase complete in tracking docs
 
 ---
 
 ### 6. Archival
 
-**File:** [`docs/planning/Phase_Planner_ARCHIVE.md`](../../../docs/planning/Phase_Planner_ARCHIVE.md)
+**File:** [`docs/planning/ARCHIVE.md`](../planning/ARCHIVE.md)
 
 **Purpose:** Compress completed phase into a summary for future reference.
 
 **Process:**
 1. Summarize phase goals, deliverables, outcomes
 2. Link to detailed documentation (if preservation needed)
-3. Append to Phase_Planner_ARCHIVE.md
+3. Append to ARCHIVE.md
 4. Delete or move detailed implementation plan (optional)
 
 **Archive Format:**
@@ -174,7 +174,7 @@ Final state, metrics, lessons learned
 
 ### 7. New Phase
 
-**Create New CURRENT_PHASE.md:**
+**Create New Content in CURRENT.md:**
 - Clear the previous phase
 - Define next phase goals
 - Reference new implementation plan
@@ -187,16 +187,17 @@ Final state, metrics, lessons learned
 ```
 docs/
 ├── planning/
-│   ├── CURRENT_PHASE.md              ← Active phase tracking
-│   ├── *_implementation.md           ← Detailed implementation plans
-│   ├── Phase_Planner_ARCHIVE.md      ← Compressed history
-│   └── roadmap.md                    ← High-level phase status
+│   ├── CURRENT.md                    ← Active phase tracking
+│   ├── implementations/              ← Detailed implementation plans
+│   ├── ARCHIVE.md                    ← Compressed history
+│   └── WORKFLOW.md                   ← This file
 ├── feedback/
 │   └── *_audit.md                    ← Audit reports (inputs)
 ├── architecture/
-│   └── CURRENT_STATE.md              ← Updated after each phase
+│   └── CURRENT.md                    ← Updated after each phase
 └── .ai/
-    └── project_guidelines.md         ← Standards (updated as needed)
+    ├── MANIFEST.yaml                 ← Feature tracking
+    └── agents.md                     ← Agent specifications
 ```
 
 ---

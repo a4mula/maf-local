@@ -38,18 +38,36 @@ echo "LITELLM_MASTER_KEY=sk-maf-secure-2025-key" > .env
 echo "GEMINI_API_KEY=your_key_here" >> .env
 ```
 
-### 3. Start the Node
-We provide a helper script to build and start all services in the correct order.
+
+### 3. Start Infrastructure Services
+First, start the Docker infrastructure services (database, AI models, etc.):
 
 ```bash
-./scripts/start_node.sh
+docker compose up -d
+```
+
+This starts:
+- PostgreSQL (database)
+- Ollama (local LLM)
+- ChromaDB (vector store)
+- LiteLLM (unified AI gateway)
+- Prometheus + Grafana (observability)
+
+### 4. Start the MAF Studio Application
+Run the Host-Native startup script:
+
+```bash
+./run_studio.sh
 ```
 
 This script will:
-1.  Build all Docker images (Agent, UI, LiteLLM).
-2.  Start the containers in detached mode.
-3.  Wait for services to stabilize.
-4.  Apply database migrations.
+1. Create/activate Python virtual environment (`.venv`)
+2. Install dependencies from `requirements.txt`
+3. Set environment variables for localhost services
+4. Start Agent API (background)
+5. Start Streamlit UI (foreground)
+
+**Note:** The Agent and UI run natively on your host, not in containers, for better performance and native file access.
 
 ---
 

@@ -15,43 +15,54 @@ managed_by: Human (strategic decisions)
 
 ## Short-Term Goals (Next 3-6 Months)
 
-### Phase 10.1: MAF SDK Compliance ✅
+### Phase 10.1: MAF SDK Compliance ✅ COMPLETED
 
 **Goal:** Ensure full compliance with Microsoft Agent Framework (MAF SDK) standards.
 
-**Status:** 🚧 IN PROGRESS
+**Status:** ✅ **COMPLETED** (2025-11-21)
 
 **Key Deliverables:**
-- Implement `ChromaDBContextProvider` (MAF SDK Context Providers interface)
-- Refactor `ContextRetrievalAgent` for dependency injection
-- Update coding standards in documentation
+- ✅ Implemented `ChromaDBContextProvider` (MAF SDK Context Providers interface)
+- ✅ Refactored `ContextRetrievalAgent` for dependency injection
+- ✅ Achieved 100% MAF SDK compliance (up from 70%)
 
-###Completed Phase 10: Multi-Project DevStudio 🎯
+**Archived:** See [`planning/ARCHIVE.md`](../planning/ARCHIVE.md#phase-101-maf-sdk-compliance-refactoring)
 
-**Goal:** Transform DevStudio from single-project to multi-project IDE backend.
+---
 
-**Vision:** The DevStudio becomes a **service** that manages **external client projects**, not its own source code.
+### Phase 10: Multi-Project DevStudio - Infrastructure Pivot ✅ COMPLETED
 
-**Key Changes:**
-1. **Principle of Least Authority (PoLA):**
-   - Read-only mount of DevStudio source code
-   - Projects live in `/workspaces/{project_id}/`
-   - Agents cannot modify system code
+**Goal:** Transform DevStudio from single-project to Host-Native multi-project foundation.
 
-2. **Project Isolation:**
-   - Project registry (PostgreSQL)
+**Status:** ✅ **INFRASTRUCTURE COMPLETED** (2025-11-22)
+
+**What Was Completed:**
+1. **Host-Native Architecture:**
+   - Infrastructure in Docker (Postgres, Ollama, ChromaDB, LiteLLM)
+   - Application on host (Agent API, Streamlit UI)
+   - Created `run_studio.sh` startup script
+
+2. **Database Foundation:**
+   - Project registry (PostgreSQL `projects` table)
+   - Session management
    - Scoped ChromaDB collections per project
-   - Session-based project switching
 
-3. **Generic Project Manager UI:**
-   - Project list view
-   - One-click project selection
-   - Project-specific file trees injected via `FileTreeReader` tool
+3. **UI Foundation:**
+   - IDE-like sidebar with project selection
+   - Project creation working
 
-**Why This Matters:**
-- **Security:** Eliminates self-modification risk
-- **Scalability:** Manage multiple client codebases
-- **Commercial Viability:** DevStudio as a service (not just self-contained tool)
+**What Is NOT Yet Complete:**
+- ❌ Hierarchical agent orchestration (agents are chatbots, not workflow creators)
+- ❌ FileWriterAgent (disk write approval workflow)
+- ❌ Domain Lead delegation
+- ❌ Autonomous development workflows
+
+> [!IMPORTANT]
+> **Status:** The **infrastructure** for multi-project support is complete, but **agent orchestration** is not yet implemented.
+>
+> See [`planning/CURRENT.md`](../planning/CURRENT.md) for re-alignment plan to complete full hierarchical multi-agent system.
+
+**Archived:** See [`planning/ARCHIVE.md`](../planning/ARCHIVE.md#phase-10-multi-project-devstudio---infrastructure-pivot--completed)
 
 ---
 

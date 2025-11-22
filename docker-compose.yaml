@@ -93,54 +93,11 @@ services:
     depends_on:
       - prometheus
 
-  ui:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.ui
-    container_name: maf-ui
-    ports:
-      - "8501:8501"
-    environment:
-      - LITELLM_URL=http://litellm:4000
-    volumes:
-      - ./src:/app/src
-    networks:
-      - maf-network
-    depends_on:
-      - litellm
-      - postgres
-
-  agent:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.agent
-    container_name: maf-agent
-    ports:
-      - "8002:8002"
-    environment:
-      - DATABASE_URL=postgresql://maf_user:maf_pass@maf-postgres:5432/maf_db
-      - LITELLM_URL=http://litellm:4000
-      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
-      - OLLAMA_HOST=http://ollama:11434
-    volumes:
-      # Mount source code as READ-ONLY to enforce PoLA (Phase 10)
-      - ./src:/app/src:ro
-      - ./maf_artifacts:/app/maf_artifacts
-      # Project workspaces (Read-Write)
-      - ./workspaces:/workspaces:rw
-      # Temporary upgrade proposals (Read-Write)
-      - maf-devstudio-upgrades:/tmp/devstudio_upgrades:rw
-    networks:
-      - maf-network
-    depends_on:
-      - litellm
-      - postgres
-      - chromadb
-      - prometheus
-    tty: true
-    stdin_open: true
-
 volumes:
+  maf_postgres_data:
+  maf_chroma_data:
+  maf_ollama_data:
+  maf_prom_data:
   ollama_data:
   postgres_data:
   chroma_data:
