@@ -84,14 +84,6 @@ Once the node is running, you can access the following interfaces:
 - **Grafana:** [http://localhost:3000](http://localhost:3000) (Default login: `admin` / `admin`)
 - **Prometheus:** [http://localhost:9093](http://localhost:9093)
 
-### 3. Agent Terminal (CLI)
-To interact with the agent directly via the command line:
-
-```bash
-docker attach maf-agent
-```
-*(Type `exit` to detach)*
-
 ---
 
 ## 📂 Project Structure
@@ -123,7 +115,7 @@ This project uses an **agent-optimized documentation system** designed for both 
 **Quick Links:**
 - 🚀 [Quick Start Guide](./docs/guides/QUICKSTART.md) - Get up and running in 10 minutes
 - 🏗️ [Current Architecture](./docs/architecture/CURRENT.md) - System design and components
-- 📋 [Current Phase](./docs/planning/CURRENT.md) - Active development work (Phase 10.1)
+- 📋 [Current Phase](./docs/planning/CURRENT.md) - Post-Refactor Stabilization
 - ❓ [Why Hierarchical Agents?](./docs/why/RATIONALE.md) - Design rationale
 - 🔮 [Vision](./docs/vision/FUTURE.md) - Long-term roadmap
 

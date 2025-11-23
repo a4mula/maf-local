@@ -2,12 +2,21 @@
 
 **Purpose:** Define agent personas, responsibilities, and boundaries for the MAF Local project.
 
+**Last Updated:** 2025-11-23
+
+---
+
+## Current Architecture (Simplified MVP)
+
+MAF Local currently implements a **2-tier architecture** following the "MVP-first" approach. The multi-tier hierarchy (DomainLeads, Executors) was temporarily removed during the Emergency Refactor and will be reintroduced incrementally.
+
 ---
 
 ## @liaison (Liaison Agent)
 
-**Tech Stack:** Python, ChatAgent SDK, FastAPI  
-**Model:** Local LLM (primary) or Cloud API (fallback)
+**Tech Stack:** Python, MAF ChatAgent, FastAPI  
+**Model:** LiteLLM Proxy (Ollama + Gemini fallback)  
+**Implementation:** [`src/agents/liaison_agent.py`](file:///home/robb/projects/maf-local/src/agents/liaison_agent.py)
 
 ### Responsibilities
 - **User Interface**: Handle all direct user interactions via Streamlit/API
@@ -30,288 +39,127 @@
 
 ## @project-lead (Project Lead Agent)
 
-**Tech Stack:** Python, ChatAgent SDK, Governance Agent, Workflow System  
-**Model:** Local LLM (primary) or Cloud API (fallback)
+**Tech Stack:** Python, MAF ChatAgent, Universal Tools  
+**Model:** LiteLLM Proxy (Ollama + Gemini fallback)  
+**Implementation:** [`src/agents/project_lead_agent.py`](file:///home/robb/projects/maf-local/src/agents/project_lead_agent.py)
 
 ### Responsibilities
-- **Architectural Decisions**: Sole authority for technical direction
-- **Workflow Creation**: Break down ideas into structured workflows
-- **Delegation**: Assign tasks to appropriate Domain Leads
-- **Governance**: Write decisions to Governance Agent
-- **Drift Detection**: Compare proposals against approved architecture
+- **Decision Making**: Make technical decisions for user requests
+- **Tool Execution**: Execute tools via MAF's `@use_function_invocation` decorator
+- **File Generation**: Create files on disk using `write_file` tool
+- **Code Execution**: Run Python code using `execute_code` tool (sandboxed)
 
 ### Boundaries
-- ❌ **Cannot**: Execute code directly
-- ❌ **Cannot**: Modify files (delegates to Executors)
-- ✅ **Can**: Create workflows
-- ✅ **Can**: Assign tasks to Domain Leads
-- ✅ **Can**: Query Governance Agent
-- ✅ **Can**: Access Context Retrieval Agent
+- ❌ **Cannot**: Delegate to Domain Leads (not yet implemented)
+- ❌ **Cannot**: Create workflows (future feature)
+- ✅ **Can**: Execute tools directly
+- ✅ **Can**: Create files on disk
+- ✅ **Can**: Run code evaluations
+- ✅ **Can**: Read project context
 
 ### Tools Available
-- `create_workflow`
-- `query_governance`
-- `assign_task_to_domain_lead`
-- `check_drift`
+- `write_file` - Create files with path validation
+- `execute_code` - Execute Python code (sandboxed via io.StringIO)
+
+**Current Pattern:** Tools registered as `AIFunction` objects using `@ai_function` decorator. Execution handled automatically by MAF framework.
 
 ---
 
-## @dev-lead (Development Domain Lead)
+## Archived Agents (Temporarily Removed)
 
-**Tech Stack:** Python, ChatAgent SDK, Code Tools (read-only)  
-**Model:** Local LLM (primary)
+The following agents were removed during the Emergency Refactor (November 2025) and will be reintroduced incrementally with proper MAF Workflow orchestration:
 
-### Responsibilities
-- **Code Review**: Review Executor-proposed code changes
-- **Architecture Alignment**: Ensure code matches Project Lead's spec
-- **Task Breakdown**: Decompose coding tasks into atomic units
-- **Executor Supervision**: Monitor Executor progress
+### @dev-lead, @qa-lead, @docs-lead (Domain Lead Agents)
+**Status:** Deleted  
+**Reason:** Premature complexity - proving 2-tier MVP first  
+**Future:** Will reintegrate with MAF Workflow graphs
 
-### Boundaries
-- ❌ **Cannot**: Write code directly (delegates to Executors)
-- ❌ **Cannot**: Make architectural decisions (escalates to Project Lead)
-- ✅ **Can**: Read code
-- ✅ **Can**: Analyze file structure
-- ✅ **Can**: Assign tasks to Executors
-- ✅ **Can**: Request Context Retrieval
+### @coder, @tester, @writer (Executor Agents)
+**Status:** Deleted  
+**Reason:** Execution layer needed to be proven first  
+**Future:** Will add as workflow nodes under Domain Leads
 
-### Tools Available
-- `read_file`
-- `search_codebase`
-- `assign_task_to_executor`
-- `query_context`
+### @governance (Governance Agent)
+**Status:** Deleted  
+**Reason:** Decision logging can be added after MVP  
+**Future:** Will reintroduce for audit trail
 
----
+### @context-retrieval (Context Retrieval Agent)
+**Status:** Deleted  
+**Reason:** Context injection simplified to file reading  
+**Future:** Will add semantic RAG capabilities
 
-## @qa-lead (QA Domain Lead)
-
-**Tech Stack:** Python, ChatAgent SDK, Testing Tools  
-**Model:** Local LLM (primary)
-
-### Responsibilities
-- **Test Planning**: Create test strategies for new features
-- **Test Review**: Validate Executor-written tests
-- **Quality Gates**: Ensure code meets quality standards
-- **Regression Prevention**: Maintain test coverage
-
-### Boundaries
-- ❌ **Cannot**: Write tests directly (delegates to Executors)
-- ❌ **Cannot**: Deploy to production
-- ✅ **Can**: Read test results
-- ✅ **Can**: Analyze coverage reports
-- ✅ **Can**: Assign testing tasks to Executors
-
-### Tools Available
-- `read_test_results`
-- `analyze_coverage`
-- `assign_test_task`
+### @artifact-manager (Artifact Manager Agent)
+**Status:** Deleted  
+**Reason:** File operations handled by tools now  
+**Future:** Will add for advanced file management
 
 ---
 
-## @docs-lead (Documentation Domain Lead)
+## Tool Execution Pattern
 
-**Tech Stack:** Markdown, Diataxis framework, DocUpdatePlanner  
-**Model:** Local LLM (primary)
+**Current Implementation (MAF-Compliant):**
 
-### Responsibilities
-- **Documentation Planning**: Use feature_manifest.yaml to identify affected docs
-- **Template Application**: Apply update_templates.yaml for consistency
-- **Review**: Validate Executor-written documentation
-- **Maintenance**: Keep docs in sync with code
-
-### Boundaries
-- ❌ **Cannot**: Modify source code
-- ❌ **Cannot**: Make architectural decisions
-- ✅ **Can**: Read all documentation
-- ✅ **Can**: Use DocUpdatePlanner tool
-- ✅ **Can**: Assign doc tasks to Executors
-
-### Tools Available
-- `plan_documentation_updates`
-- `get_update_template`
-- `read_markdown`
-- `assign_doc_task`
-
----
-
-## @executor (Executor Agent)
-
-**Tech Stack:** Python, All Tool Registry (scoped by Domain)  
-**Model:** Local LLM (primary) or Cloud API for complex generation (fallback)
-
-### Responsibilities
-- **Atomic Task Execution**: Execute single, well-defined tasks
-- **Artifact Generation**: Produce code, tests, and documentation as **output artifacts** (strings/data)
-- **Test Execution**: Run tests and return results to Domain Lead
-- **Code Analysis**: Search codebase and provide insights
-
-### Boundaries
-- ❌ **Cannot**: Make decisions beyond immediate task
-- ❌ **Cannot**: Modify task scope
-- ❌ **Cannot**: Access DevStudio source code (Phase 10+)
-- ❌ **Cannot**: Write files to disk (produces artifacts that DL validates → PL approves → FileWriter executes)
-- ✅ **Can**: Read assigned project directory
-- ✅ **Can**: Execute code in sandbox (in-memory)
-- ✅ **Can**: Run tests and collect results
-- ✅ **Can**: Escalate uncertainty to Domain Lead
-
-### Tools Available (scoped by domain)
-- **Dev Executor**: `read_file`, `execute_code`, `search_codebase`, `analyze_dependencies`
-- **QA Executor**: `run_tests`, `read_test_results`, `analyze_coverage`
-- **Docs Executor**: `read_markdown`, `validate_frontmatter`, `check_links`
-
-**IMPORTANT:** Executors produce **artifacts** (code as strings, test results as JSON), not files on disk. All disk writes require:
-1. Executor generates artifact
-2. Domain Lead validates quality
-3. Project Lead approves for project fit
-4. FileWriterAgent executes write with approval token
-
----
-
-## @file-writer (File Writer Agent)
-
-**Tech Stack:** Python, File System Tools, Audit Logger  
-**Model:** None (pure tool executor)
-
-### Responsibilities
-- **Disk Write Execution**: Write approved artifacts to project filesystem
-- **Path Validation**: Ensure writes are within project boundary
-- **Audit Logging**: Record all file operations to PostgreSQL
-- **Approval Enforcement**: Reject writes without valid PL token
-
-### Boundaries
-- ❌ **Cannot**: Generate code or make decisions
-- ❌ **Cannot**: Read files (not its role)
-- ❌ **Cannot**: Modify write scope or ignore approval tokens
-- ✅ **Can**: Execute `write_file(path, content, approval_token)` when token valid
-- ✅ **Can**: Validate paths are within project directory
-- ✅ **Can**: Log operations to audit trail
-
-### Tools Available
-- `write_file` (requires approval token from ProjectLead)
-- `validate_path` (internal: ensure path within project bounds)
-- `log_write_operation` (internal: audit trail to PostgreSQL)
-
-### Access Control Flow
-```
-Executor
-  ↓ [generates code artifact]
-Domain Lead
-  ↓ [validates quality: "meets dev standards?"]
-Project Lead
-  ↓ [approves: "fits project?", issues approval_token]
-FileWriterAgent
-  ↓ [validates token, writes to disk, logs audit]
-Filesystem
+```python
+# LiteLLMChatClient extends BaseChatClient
+@use_function_invocation
+class LiteLLMChatClient(BaseChatClient):
+    async def _inner_get_response(...):
+        # Convert MAF -> OpenAI -> MAF
+        # Framework handles tool execution loop automatically
 ```
 
-**Security:** Only agent with direct filesystem write access. All operations logged. Approval tokens prevent unauthorized writes.
-
-**Status:** ❌ NOT YET IMPLEMENTED (Phase 0 Fix 2 required)
-
----
-
-## @governance (Governance Agent)
-
-**Tech Stack:** PostgreSQL, JSON/YAML storage  
-**Model:** None (passive storage)
-
-### Responsibilities
-- **Decision Storage**: Store Project Lead's architectural decisions
-- **Drift Detection**: Provide baseline for comparison
-- **Audit Trail**: Immutable record of all governance actions
-
-### Boundaries
-- ❌ **Cannot**: Make decisions
-- ❌ **Cannot**: Execute tools
-- ✅ **Can**: Store structured data
-- ✅ **Can**: Return historical decisions
-
-### Tools Available
-- None (accessed via `query_governance` tool by other agents)
+**How it works:**
+1. Tools defined as `UniversalTool` in `universal_tools.py`
+2. Exported as `AIFunction` via `registry.get_ai_functions()`
+3. Passed to `ChatAgent` during initialization
+4. `@use_function_invocation` decorator intercepts responses
+5. Framework executes tools and feeds results back to LLM
+6. No custom execution loop required
 
 ---
 
-## @context-retrieval (Context Retrieval Agent)
+## Future Roadmap
 
-**Tech Stack:** ChromaDB, pgvector, Python  
-**Model:** None (retrieval-only)
+### Phase 5: Domain Lead Reintegration
+- Re-add DomainLeadAgent classes (Dev, QA, Docs)
+- Implement MAF Workflow orchestration
+- Add delegation from ProjectLead → DomainLeads
 
-### Responsibilities
-- **RAG Queries**: Provide relevant context from ChromaDB
-- **Project-Scoped Retrieval**: Filter by `project_id`
-- **File Tree Reading**: Introspect external projects (Phase 10+)
+### Phase 6: Executor Layer
+- Add ExecutorAgent classes (Coder, Tester, Writer)
+- Assign to Domain Leads via workflow nodes
+- Implement task atomicity and escalation
 
-### Boundaries
-- ❌ **Cannot**: Modify files
-- ❌ **Cannot**: Make decisions
-- ✅ **Can**: Read file structure
-- ✅ **Can**: Query vector database
-- ✅ **Can**: Return ranked results
-
-### Tools Available
-- `read_project_tree`
-- `query_chromadb`
-- `search_by_embedding`
+### Phase 7: Governance & Context
+- Reintroduce GovernanceAgent for decision logging
+- Add ContextRetrievalAgent for semantic RAG
+- Integrate with PostgreSQL + ChromaDB
 
 ---
 
-## @artifact-manager (Artifact Manager Agent)
+## Agent Communication
 
-**Tech Stack:** Git, File System, PostgreSQL (audit)  
-**Model:** None (validation logic)
-
-### Responsibilities
-- **File Validation**: Ensure code meets quality standards
-- **Commit Gating**: Only validated code gets committed
-- **Audit Logging**: Record all file operations
-
-### Boundaries
-- ❌ **Cannot**: Generate code
-- ❌ **Cannot**: Make decisions
-- ✅ **Can**: Read files
-- ✅ **Can**: Validate syntax
-- ✅ **Can**: Commit to Git
-
-### Tools Available
-- `validate_file`
-- `commit_to_git`
-- `audit_file_operation`
-
----
-
-## Agent Interaction Rules
-
-1. **Upward Escalation**: Agents escalate uncertainty to their superior
-2. **Downward Delegation**: Agents assign tasks, not make decisions for subordinates
-3. **Horizontal Communication**: Domain Leads coordinate via Project Lead (no direct talk)
-4. **Tool Boundaries**: Agents only use tools in their allowlist
-5. **Decision Authority**: Only Project Lead makes architectural choices
-
----
-
-## Example Workflow
-
+**Current Pattern:**
 ```
-User → Liaison → Project Lead → Dev Lead → Executor
-                      ↓              ↓
-                  Governance    Context Retrieval
+User → Streamlit → API → Liaison → ProjectLead → Tools → Response
 ```
 
-1. **User** sends idea via Liaison
-2. **Liaison** classifies as "Idea" and forwards to Project Lead
-3. **Project Lead** creates workflow, writes to Governance
-4. **Dev Lead** receives task, breaks into atomic units
-5. **Executor** implements code, requests context as needed
-6. **Artifact Manager** validates and commits
+**Future Pattern (Multi-Tier):**
+```
+User → Liaison → ProjectLead → DomainLead → Executor → Tools → Response
+                      ↓
+                 Governance (audit log)
+                      ↓
+                 ContextRetrieval (RAG)
+```
 
 ---
 
-## Self-Validation Questions
+## Best Practices
 
-When an agent is unsure of its authority:
-1. "Is this decision within my tier's responsibility?"
-2. "Do I have the necessary tools?"
-3. "Should I escalate this?"
-
-If "No" to any, **escalate** rather than assume.
+When working with agents:
+1. **Respect boundaries** - Each agent has limited capabilities
+2. **Use MAF patterns** - Leverage `ChatAgent`, `AIFunction`, decorators
+3. **Test incrementally** - Prove each layer works before adding more
+4. **Follow MVP-first** - Simplicity over architecture
