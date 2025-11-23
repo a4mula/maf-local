@@ -1,0 +1,706 @@
+# Ideal Hierarchical Agent Architecture
+
+**Purpose:** Define the target architecture for MAF Local's multi-tier agent system  
+**Status:** Design specification (not yet fully implemented)  
+**Current State:** 2-tier MVP (Liaison → ProjectLead)
+
+---
+
+## Core Philosophy
+
+**Principle:** Small context windows via strict separation of concerns
+
+**Why:**
+- Large context windows → cognitive overload → unfocused responses
+- Specialized agents → focused expertise → higher quality output
+- Clear boundaries → predictable behavior → easier debugging
+
+**Target:** Each agent operates with minimal context necessary for their specific responsibility
+
+---
+
+## Hierarchical Structure
+
+```
+User
+  ↓
+┌─────────────────┐
+│ Liaison Agent   │ (Tier 1: Interface)
+└────────┬────────┘
+         ↓
+┌─────────────────┐
+│ Project Lead    │ (Tier 2: Strategy)
+└────────┬────────┘
+         ↓
+    ┌────┴────┬────────────┐
+    ↓         ↓            ↓
+┌───────┐ ┌───────┐  ┌──────────┐
+│Dev DL │ │QA DL  │  │Docs DL   │ (Tier 3: Tactical)
+└───┬───┘ └───┬───┘  └────┬─────┘
+    ↓         ↓            ↓
+┌───────┐ ┌───────┐  ┌──────────┐
+│Coder  │ │Tester │  │Writer    │ (Tier 4: Execution)
+└───┬───┘ └───┬───┘  └────┬─────┘
+    ↓         ↓            ↓
+┌───────────────────────────────┐
+│  Specialized Services         │
+│  - FileWriter                 │
+│  - DocsWriter                 │
+│  - ContextRetrieval           │
+└───────────────────────────────┘
+```
+
+---
+
+## Tier 1: Liaison Agent (Interface Layer)
+
+**Responsibility:** User communication gateway
+
+**Context Window:** Minimal
+- Current conversation only
+- No project knowledge
+- No technical details
+
+**Capabilities:**
+- Intent classification (Question vs Idea vs Command)
+- Clarification requests
+- User message forwarding
+- Natural language only (no tools)
+
+**Decision Authority:** None - purely pass-through
+
+**Pattern:**
+```
+User: "Add authentication to the API"
+Liaison: [classifies as IDEA] → forwards to ProjectLead
+```
+
+**Why Small Context:**
+Liaison doesn't need to know *how* things work, only *what* the user wants. This keeps responses fast and focused on communication.
+
+---
+
+## Tier 2: Project Lead (Strategic Layer)
+
+**Responsibility:** High-level orchestration and architectural decisions
+
+**Context Window:** Medium
+- Project vision and architecture
+- Current system state
+- Available Domain Leads
+- Governance decisions
+- NO implementation details
+
+**Capabilities:**
+- Break down user ideas into domain-specific workflows
+- Create MAF Workflow graphs
+- Assign sub-workflows to Domain Leads
+- Make architectural decisions
+- Store governance decisions
+- Context retrieval for high-level planning
+
+**Decision Authority:** Final arbiter
+- Architecture patterns
+- Technology choices
+- Strategic layering of project graph
+- Approval of DL workflow designs
+
+**Tools:**
+- `create_workflow` - Build MAF WorkflowGraph
+- `assign_to_domain_lead` - Delegate sub-workflows
+- `store_decision` - Record architectural choices
+- `retrieve_context` - Query high-level project state
+
+**Pattern:**
+```
+Liaison → "Add authentication"
+ProjectLead:
+  1. Retrieves current architecture
+  2. Decides: JWT-based auth with middleware
+  3. Creates workflow graph:
+     - Dev DL: Implement JWT middleware
+     - QA DL: Create auth tests
+     - Docs DL: Update API docs
+  4. Stores decision: "Use JWT (RFC 7519)"
+  5. Assigns workflows to DLs
+```
+
+**Why Medium Context:**
+PL needs strategic overview but NOT implementation details. Knows "we use FastAPI" but not "how middleware is implemented."
+
+**Graph Structure Decision:**
+PL creates the **top-level workflow graph** with nodes representing Domain Lead tasks. DLs fill in the details.
+
+---
+
+## Tier 3: Domain Leads (Tactical Layer)
+
+**Responsibility:** Domain-specific workflow orchestration
+
+**Domains:**
+- **Dev DL** - Code implementation, refactoring, architecture
+- **QA DL** - Testing, verification, quality assurance
+- **Docs DL** - Documentation, guides, API references
+
+**Context Window:** Domain-scoped
+- Their domain's current state (e.g., code structure for Dev DL)
+- Relevant patterns and conventions
+- Available Executors
+- NO other domains' details
+
+**Capabilities:**
+- Design their own workflow graphs (with authority)
+- Break down PL tasks into atomic executor tasks
+- Context retrieval (domain-scoped)
+- Validation of executor output
+- Escalation to PL for ambiguity
+
+**Decision Authority:** Domain autonomy
+- *How* to implement (within PL's architecture)
+- Task breakdown strategy
+- Executor assignment
+- Quality standards
+
+**Tools:**
+- `create_sub_workflow` - Build domain workflow graph
+- `assign_to_executor` - Delegate atomic tasks
+- `retrieve_domain_context` - Query domain-specific state
+- `validate_output` - Check executor work
+- `escalate_to_pl` - Ask for clarification
+
+**Pattern (Dev DL receives "Implement JWT middleware"):**
+```
+Dev DL:
+  1. Retrieves current FastAPI structure
+  2. Designs workflow:
+     [Create middleware] → [Add to app] → [Test endpoint]
+  3. Creates sub-workflow graph with checkpoints:
+     - Node 1: Coder creates middleware.py
+     - Checkpoint: Verify syntax
+     - Node 2: Coder integrates into main.py
+     - Checkpoint: Verify imports
+     - Node 3: Coder adds protected route
+  4. Assigns nodes to Coder executor
+  5. Validates each checkpoint
+```
+
+**Why Domain-Scoped Context:**
+Dev DL doesn't need to know test strategies (QA's job) or documentation format (Docs' job). This isolation prevents interference and keeps LLM focused.
+
+**Workflow Graph Authority:**
+DLs have full autonomy to design their workflows. PL sets the goal, DL determines the path.
+
+---
+
+## Tier 4: Executors (Execution Layer)
+
+**Responsibility:** Atomic task execution
+
+**Executor Types:**
+- **Coder** - Write code, refactor, implement features
+- **Tester** - Write tests, run test suites, analyze coverage
+- **Writer** - Create documentation, update guides
+
+**Context Window:** Task-scoped
+- Single file or small file set
+- Task-specific requirements
+- Relevant code patterns
+- NO broader domain knowledge
+
+**Capabilities:**
+- Execute single atomic task
+- NO decision-making (escalate ambiguity)
+- Use specialized services (FileWriter, DocsWriter)
+- Return structured output (code artifact, test results, doc content)
+
+**Decision Authority:** None - pure execution
+- If requirements unclear → escalate to DL
+- No architectural choices
+- No cross-file decisions
+
+**Tools (via delegation to specialized services):**
+- Request file write via FileWriter
+- Request doc write via DocsWriter
+- Execute code for validation
+
+**Pattern (Coder receives "Create JWT middleware"):**
+```
+Coder:
+  1. Receives task: "Create middleware.py with JWT validation"
+  2. Generates code artifact (string)
+  3. Requests validation (execute to check imports)
+  4. Returns artifact to Dev DL
+  5. Dev DL approves → sends to FileWriter
+```
+
+**Why Task-Scoped Context:**
+Coder doesn't need to know entire codebase, only the specific file/pattern for this task. This maximizes focus and minimizes hallucination.
+
+**No Direct File Access:**
+Executors produce artifacts (strings), NOT files. This enforces approval workflow.
+
+---
+
+## Specialized Services (Enforcement Layer)
+
+### FileWriter Service
+
+**Responsibility:** Sole authority for disk writes (non-documentation)
+
+**Context Window:** None (pure function)
+- File path
+- File content
+- Approval token from PL
+
+**Pattern:**
+```
+Coder → artifact → Dev DL validates → PL approves 
+  → FileWriter(path, content, pl_token) → writes to disk
+```
+
+**Why Single Writer:**
+- Enforces approval workflow (PoLA)
+- Prevents concurrent writes
+- Centralized audit trail
+- Path validation in one place
+
+**Approval Flow:**
+```
+1. Executor generates artifact
+2. DL validates quality
+3. DL requests PL approval
+4. PL checks against architecture
+5. PL provides approval token
+6. FileWriter verifies token, writes file
+```
+
+---
+
+### DocsWriter Service
+
+**Responsibility:** Sole authority for documentation writes
+
+**Context Window:** None (pure function)
+- Doc path (docs/ only)
+- Doc content
+- Approval token from Docs DL
+
+**Pattern:**
+```
+Writer → doc artifact → Docs DL validates → approves
+  → DocsWriter(path, content, dl_token) → writes to docs/
+```
+
+**Why Separate from FileWriter:**
+- Different approval chain (Docs DL, not PL)
+- Different path constraints (docs/ vs src/)
+- Different validation rules (markdown vs code)
+
+---
+
+### ContextRetrieval Service
+
+**Responsibility:** Semantic search and context injection
+
+**Context Window:** None (stateless)
+- Query
+- Scope (project, domain, or task)
+
+**Pattern:**
+```
+Agent: "What's our current auth approach?"
+ContextRetrieval:
+  1. Queries ChromaDB with "auth approach"
+  2. Filters by scope (e.g., project-wide)
+  3. Returns top-k relevant chunks
+  4. Agent uses chunks for decision
+```
+
+**Why Separate Service:**
+- Shared by all tiers (PL, DLs, Executors)
+- Stateless = no context pollution
+- Single point for RAG optimization
+
+---
+
+## Workflow Graph Creation
+
+### Strategic Graph (Project Lead)
+
+**Responsibility:** Top-level orchestration
+
+**Example:**
+```python
+workflow = WorkflowBuilder()
+  .add_node("auth_implementation", target=dev_dl)
+  .add_node("auth_testing", target=qa_dl)
+  .add_node("auth_docs", target=docs_dl)
+  .add_edge("auth_implementation", "auth_testing")  # Sequential
+  .add_edge("auth_implementation", "auth_docs")     # Parallel
+  .build()
+```
+
+**Graph Structure:**
+- Nodes = Domain Lead tasks
+- Edges = Dependencies
+- No implementation details
+
+**PL Authority:**
+- Defines what gets done
+- Defines execution order
+- Approves DL sub-graphs
+
+---
+
+### Tactical Graphs (Domain Leads)
+
+**Responsibility:** Domain-specific execution plans
+
+**Example (Dev DL):**
+```python
+sub_workflow = WorkflowBuilder()
+  .add_node("create_middleware", target=coder, checkpoint=True)
+  .add_node("integrate_middleware", target=coder, checkpoint=True)
+  .add_node("add_protected_route", target=coder, checkpoint=True)
+  .add_edge("create_middleware", "integrate_middleware")
+  .add_edge("integrate_middleware", "add_protected_route")
+  .build()
+```
+
+**Graph Structure:**
+- Nodes = Executor tasks
+- Checkpoints = Validation points
+- Edges = Dependencies
+- Includes implementation details
+
+**DL Authority:**
+- Designs sub-graph structure
+- Defines checkpoints
+- Validates at each step
+- NO approval from PL needed (autonomy)
+
+---
+
+## Checkpointing Strategy
+
+### Bottom-Up Checkpointing
+
+**Pattern:** Executors → DL → PL
+
+**Flow:**
+```
+1. Executor completes task → returns artifact
+2. DL checkpoint: validates output
+   - Pass → continue to next executor task
+   - Fail → retry or escalate
+3. DL completes sub-workflow → returns to PL
+4. PL checkpoint: validates domain work
+   - Pass → approve for FileWriter
+   - Fail → send back to DL for revision
+```
+
+**Why Bottom-Up:**
+- Catches errors early (at executor level)
+- Reduces PL involvement (DL validates first)
+- Allows DL autonomy (no micro-management)
+
+---
+
+### Cyclic Checkpointing
+
+**Pattern:** Iterative refinement cycles
+
+**Flow:**
+```
+1. Coder generates code artifact v1
+2. Dev DL validates → finds issue
+3. Dev DL provides feedback → back to Coder
+4. Coder generates code artifact v2
+5. Dev DL validates → approves
+6. Sends to PL
+```
+
+**Use Case:** Complex tasks requiring iteration
+
+**Why Cyclic:**
+- Enables refinement without PL involvement
+- Keeps context tight (DL + Executor loop)
+- Faster than escalating to PL each time
+
+---
+
+### Middleware-Based Checkpointing
+
+**Implementation:** MAF WorkflowState serialization
+
+**Pattern:**
+```python
+# Checkpoint after each node
+@workflow.middleware
+async def checkpoint_middleware(context):
+    await checkpoint_storage.save(context.workflow_state)
+    result = await context.next()
+    return result
+```
+
+**Benefits:**
+- Automatic pause/resume
+- Crash recovery
+- Allows human-in-loop approval
+
+**Storage:** PostgreSQL `workflow_checkpoints` table
+
+---
+
+## Context Window Management Strategy
+
+### Tier-Specific Limits
+
+| Tier | Context Window | Contents |
+|------|---------------|-----------|
+| **Liaison** | 2K tokens | Current conversation only |
+| **Project Lead** | 8K tokens | Architecture, decisions, DL status |
+| **Domain Lead** | 8K tokens | Domain state, executor tasks, patterns |
+| **Executor** | 4K tokens | Single task, relevant code, examples |
+
+### Context Injection Strategy
+
+**Instead of:** "Here's the entire codebase"
+
+**Use:**
+1. **Query ContextRetrieval** with specific question
+2. **Retrieve top-k chunks** (e.g., 3-5 relevant files)
+3. **Inject only relevant context**
+4. **Execute task with minimal context**
+
+**Example:**
+```
+Coder task: "Add JWT middleware"
+Context retrieved:
+  - FastAPI middleware pattern (1 example)
+  - Current auth.py structure (1 file)
+  - JWT validation snippet (1 function)
+Total: ~500 tokens instead of 50K
+```
+
+---
+
+## Separation of Concerns Principles
+
+### 1. Single Responsibility per Agent
+
+**Bad:**
+```
+Coder:
+  - Write code
+  - Write tests
+  - Update docs
+  - Commit to git
+```
+
+**Good:**
+```
+Coder: Write code only
+Tester: Write tests only
+Writer: Update docs only
+FileWriter: Commit to git only
+```
+
+---
+
+### 2. Single Source of Truth per Resource
+
+**File Writes:**
+- Only FileWriter touches src/
+- Only DocsWriter touches docs/
+
+**Decisions:**
+- Only PL stores governance decisions
+- Only DLs create domain workflows
+
+**Context:**
+- Only ContextRetrieval queries ChromaDB
+- Agents never directly access database
+
+---
+
+### 3. Escalation Over Assumption
+
+**Rule:** If unsure, escalate up one tier
+
+**Example:**
+```
+Coder: "Should I use async or sync for this function?"
+  → Escalate to Dev DL
+Dev DL: "This violates our async-everywhere policy"
+  → Decides: use async
+  → Returns decision to Coder
+```
+
+**Why:** Prevents executors making architectural decisions with insufficient context
+
+---
+
+## Communication Patterns
+
+### Downward (Assignment)
+
+**PL → DL:**
+```
+{
+  "task": "Implement authentication",
+  "constraints": ["Use JWT", "Async only"],
+  "deadline": "Phase 5",
+  "success_criteria": "Tests pass, docs updated"
+}
+```
+
+**DL → Executor:**
+```
+{
+  "task": "Create middleware.py",
+  "requirements": "JWT validation with RS256",
+  "context": [
+    "example_middleware.py",
+    "current auth.py structure"
+  ],
+  "output_format": "Python code artifact"
+}
+```
+
+---
+
+### Upward (Reporting)
+
+**Executor → DL:**
+```
+{
+  "status": "complete",
+  "artifact": "<code>",
+  "validation": "Syntax valid, imports clean",
+  "questions": []
+}
+```
+
+**DL → PL:**
+```
+{
+  "status": "complete",
+  "workflow_id": "auth_implementation",
+  "results": {
+    "files_changed": 3,
+    "tests_added": 12
+  },
+  "ready_for_approval": true
+}
+```
+
+---
+
+### Horizontal (Coordination)
+
+**Between DLs (via PL):**
+```
+Docs DL: "Need API endpoint details for docs"
+  → Request to PL
+PL: Asks Dev DL
+Dev DL: Provides OpenAPI spec
+  → PL forwards to Docs DL
+```
+
+**Why through PL:**
+- PL maintains system-wide coherence
+- Prevents DL context pollution
+- Centralizes coordination overhead
+
+---
+
+## Implementation Phases
+
+### Phase 1: Foundation (Complete ✅)
+- Liaison + ProjectLead (2-tier)
+- Tool execution working
+- File generation operational
+
+### Phase 2: Domain Leads (Next)
+- Add Dev DL, QA DL, Docs DL
+- Implement sub-workflow creation
+- Add checkpoint validation
+
+### Phase 3: Executors
+- Add Coder, Tester, Writer
+- Implement artifact-based output
+- Add escalation patterns
+
+### Phase 4: Specialized Services
+- FileWriter with approval workflow
+- DocsWriter with DL approval
+- ContextRetrieval with semantic search
+
+### Phase 5: Workflow Orchestration
+- MAF WorkflowGraph integration
+- Checkpoint/resume capability
+- Parallel execution support
+
+---
+
+## Benefits of This Architecture
+
+### 1. Focused Agents
+Each agent operates with minimal context → higher quality, fewer hallucinations
+
+### 2. Clear Accountability
+Single FileWriter → audit trail shows exactly what was written when
+
+### 3. Scalability
+Add new DL (e.g., Infra DL) without touching existing agents
+
+### 4. Testability
+Each tier can be tested independently with mocks
+
+### 5. Human Oversight
+Checkpoints allow human approval at any stage
+
+### 6. Fault Isolation
+Executor error doesn't crash entire system
+
+### 7. Parallel Execution
+DLs can work concurrently (Dev + QA + Docs in parallel)
+
+---
+
+## Anti-Patterns to Avoid
+
+**❌ God Agent:** One agent doing everything  
+**✅ Solution:** Strict tier separation
+
+**❌ Context Creep:** Agents accumulating unnecessary context  
+**✅ Solution:** ContextRetrieval + minimal injection
+
+**❌ Decision Leakage:** Executors making architectural choices  
+**✅ Solution:** Escalation workflows
+
+**❌ Direct File Access:** Agents writing directly to disk  
+**✅ Solution:** FileWriter/DocsWriter approval workflow
+
+**❌ Cross-Domain Communication:** DLs talking directly  
+**✅ Solution:** PL-mediated coordination
+
+---
+
+## Summary
+
+**Ideal Architecture:**
+- 4 tiers (Liaison, PL, DL, Executor) + Specialized Services
+- Small context windows via strict separation
+- Bottom-up checkpointing with DL autonomy
+- Single source of truth per resource (FileWriter, DocsWriter)
+- PL controls strategy, DLs control tactics, Executors execute
+
+**Current State:** 2-tier MVP (Liaison → PL)
+
+**Path Forward:** Incrementally add tiers with tests at each step, proving each layer before adding the next.
+
+---
+
+*Designed for maximum focus, minimal context, clear accountability.*
