@@ -1,6 +1,6 @@
 # Current Architecture
 
-**Last Updated:** November 22, 2025
+**Last Updated:** November 23, 2025
 
 ## Overview
 
@@ -29,34 +29,36 @@ The Hierarchical MAF Studio is a local-first, GPU-accelerated development enviro
 
 ### 2. Agent Hierarchy
 
+**Current Architecture (Simplified MVP):**
+
 ```
 User
   ↓
-LiaisonAgent (Tier 1)
+LiaisonAgent (Tier 1) - Intent Classification, Message Routing
   ↓
-ProjectLeadAgent (Tier 2)
-  ↓
-DomainLeadAgent (Tier 3) [Development, QA, Docs]
-  ↓
-ExecutorAgent (Tier 4) [Coder, Tester, Writer]
-  ↓
-FileWriterAgent (Specialized) [PL-Approved Disk Writes]
+ProjectLeadAgent (Tier 2) - Decision Making, Tool Execution via MAF ChatAgent
 ```
 
-**Current Implementation Status:**
+**Implementation Status:**
 
-> [!CAUTION]
-> **Critical Gap:** Agents exist as classes but function as **chatbots**, not workflow orchestrators.
+> [!NOTE]
+> **Architecture Philosophy:** Following "MVP-first" approach - prove core mechanics work before adding complexity.
 
-- ✅ Liaison and Project Lead exist as `ChatAgent` instances
-- ⚠️ They **pass messages**, not create MAF Workflow Graphs
-- ❌ Domain Leads exist but are **not wired** to Project Lead
-- ❌ Executors exist but are **never invoked**
-- ❌ FileWriterAgent **does not exist** yet
+- ✅ Liaison and Project Lead implemented using MAF's `ChatAgent`
+- ✅ MAF-compliant tool execution via `@use_function_invocation` decorator
+- ✅ Tools registered as `AIFunction` objects
 - ✅ Intent classification works (Question vs. Idea)
-- ⚠️ Context injection uses **blocking sync I/O** (`os.walk`, violates async mandate)
+- ✅ File generation capability via `write_file` tool
+- ✅ LiteLLMChatClient extends `BaseChatClient` properly
 
-**Comprehensive Audit Findings:** See [`feedback/feedback_full.md`](../feedback/feedback_full.md) for 16-component technical analysis.
+**Deleted Agents (Emergency Refactor - Nov 2025):**
+- ❌ DomainLeadAgent (removed in simplification phase)
+- ❌ ExecutorAgent (removed in simplification phase)
+- ❌ GovernanceAgent (removed in simplification phase)
+- ❌ ContextRetrievalAgent (removed in simplification phase)
+- ❌ ArtifactManagerAgent (removed in simplification phase)
+
+**Rationale:** Focused on working execution layer before rebuilding hierarchy. See `walkthrough.md` for refactor details.
 
 ### 3. Data Persistence
 
@@ -105,58 +107,60 @@ maf-local/
 └── .venv/            # Python virtual environment (Host-Native)
 ```
 
-## Security & Isolation
+## Security & File I/O
 
-> [!WARNING]
-> **Current PoLA Status:** VIOLATED
+### Current Implementation:
 
-### Intended Design (Phase 10):
-1. **Read-Only Source**: Agents cannot modify `/app/src` (DevStudio source).
-2. **Workspace Isolation**: Agents operate in `/workspaces/{project_id}/`.
-3. **Context Scoping**: All persistence operations (DB, Vector) are scoped by `project_id`.
+**File Writing:**
+- ✅ Sandboxed `write_file` tool in `src/tools/code_tools.py`
+- ✅ Path validation prevents directory traversal
+- ✅ Operations scoped to project root via `_is_safe_path()`
 
-### Current Reality (from Comprehensive Audit):
-- ❌ Liaison and ProjectLead **directly access filesystem** (lines 18 in both files)
-- ❌ No FileWriterAgent to enforce approval workflow
-- ❌ `code_tools.py` uses **unchecked `exec()`** (RCE vulnerability)
-- ⚠️ Hardcoded security defaults (`sk-1234`, `maf_user:maf_pass`)
+**Code Execution:**
+- ⚠️ `execute_code` tool uses `exec()` for Python evaluation
+- ⚠️ Isolated via `io.StringIO` redirection
+- 🔒 Future: Consider containerized sandbox
 
-**Resolution Plan:** See [`planning/CURRENT.md`](../planning/CURRENT.md) Phase 0 (Critical Infrastructure Fixes).
+**Authentication:**
+- ⚠️ LiteLLM uses `LITELLM_MASTER_KEY` from `.env`
+- ⚠️ PostgreSQL uses credentials from `.env`
+- 🔒 Recommended: Rotate default credentials in production
 
-## Current Limitations
+## Recent Improvements (November 2025)
 
-> [!CAUTION]
-> **The system is architecturally sound but functionally incomplete.**
+> [!NOTE]
+> **Emergency Refactor Complete:** All critical execution layer issues resolved.
 
-### Critical Gaps (from Comprehensive Audit):
+### Fixed Issues:
 
-1. **LLM Adapter Cannot Parse Tool Calls** 🛑
-   - `litellm_client.py` returns only text, not tool call objects
-   - **Impact:** Agents cannot use ANY tools
-   - **Workaround:** `core_agent.py` uses brittle string parsing
+1. **✅ Tool Execution Working**
+   - `LiteLLMChatClient` now extends `BaseChatClient`
+   - Applied `@use_function_invocation` decorator for automatic tool execution
+   - MAF framework handles the execution loop natively
 
-2. **No Secure File Writing** 🛑
-   - `code_tools.py` has no `write_file` tool
-   - **Impact:** System cannot generate code files
-   - **Security:** Unchecked `exec()` poses RCE risk
+2. **✅ File Generation Operational**
+   - `write_file` tool implemented with path sandboxing
+   - Integration tests confirm end-to-end flow works
+   - Files successfully created on disk
 
-3. **Delegation Stubbed** ⚠️
-   - `communication_tools.py` has empty `send_message` stub
-   - **Impact:** ProjectLead cannot delegate to Domain Leads
+3. **✅ Architecture Simplified**
+   - Removed unused agents (DomainLead, Executor, etc.)
+   - Focus on proven working components
+   - Eliminated "architecture astronaut" complexity
 
-4. **Async I/O Violations** ⚠️
-   - Liaison and PL use synchronous `os.walk` during init
-   - **Impact:** Blocks event loop, wastes LLM tokens
+### Current Limitations:
 
-### Strong Components (Audit "Bright Spots"):
+1. **Limited Hierarchy** ⚠️
+   - Only 2-tier architecture (Liaison → ProjectLead)
+   - Future: Rebuild Domain Leads with proper MAF workflows
 
-- ✅ `chromadb_context_provider.py` - Perfect MAF SDK compliance
-- ✅ `project_context.py` - Concurrency-safe, strict enforcement
-- ✅ `universal_tools.py` - Sophisticated PoLA framework
-- ✅ `governance_agent.py` - Textbook async implementation
-- ✅ `context_retrieval_agent.py` - Clean dependency injection
+2. **Basic Tool Set** ⚠️
+   - Current tools: `write_file`, `execute_code`
+   - Future: Add code analysis, testing, deployment tools
 
-**Metaphor from Audit:** *"The shape of a car (class hierarchy, interfaces) exists, but the engine and steering wheel (Tool Client, Delegation, Execution) are missing or broken."*
+3. **Manual Testing** ⚠️
+   - Integration tests verify structure
+   - Full E2E workflow testing requires real LLM interaction
 
 ## API Endpoints
 

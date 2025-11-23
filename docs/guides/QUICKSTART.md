@@ -2,7 +2,7 @@
 type: tutorial
 audience: beginner
 status: published
-last_updated: 2025-11-21
+last_updated: 2025-11-23
 related:
   - ../how-to/deploy_with_docker.md
   - ../architecture/CURRENT_STATE.md
@@ -196,10 +196,10 @@ I want to add a new REST API endpoint that returns the current system status.
 - Project Lead stores a decision in the governance database
 - **Project Lead responds with analysis** (text response)
 
-> [!IMPORTANT]
-> **Current Limitation:** Agents currently function as "intelligent chatbots" that analyze and respond to ideas, but do **not yet** autonomously implement workflows or generate code files.
+> [!NOTE]
+> **Current Capabilities:** The system uses MAF's `ChatAgent` with `@use_function_invocation` decorator for automatic tool execution. Agents can create files on disk using the `write_file` tool.
 >
-> See [`docs/planning/CURRENT.md`](../planning/CURRENT.md) for the re-alignment plan to enable full autonomous development.
+> **Limitation:** Currently a 2-tier architecture (Liaison → ProjectLead). Domain Leads and Executors will be added incrementally as the system scales.
 
 ---
 
@@ -228,15 +228,16 @@ docker restart maf-ollama
 
 ---
 
-**Problem:** Streamlit shows "Connection refused"
+**Problem:** Agent API shows "Connection refused"
 
 **Solution:**
 ```bash
-# Check agent container logs
-docker logs maf-agent
+# Check API log (host-native)
+tail -f agent.log
 
-# Restart the agent
-docker restart maf-agent
+# Restart the API server
+pkill -f "python -m src.api_server"
+./run_studio.sh
 ```
 
 ---
