@@ -289,6 +289,98 @@ Apply **universal CURRENT + ARCHIVE pattern** across all temporal documentation:
 
 ---
 
+## ADR-008: Emergency Refactor - MVP-First Approach (Phase 0 Reset)
+
+**Date:** 2025-11-22  
+**Status:** ⚡ ACCEPTED (CRITICAL)  
+**Deciders:** Expert Systems Review, Project Lead
+
+### Context
+
+Expert systems engineering assessment (Google/Microsoft-tier) identified critical strategic failure:
+
+**Problem:** "Architecture Astronaut Trap" - built elaborate 4-tier agent hierarchy before proving core execution layer works.
+
+**Evidence:**
+- `litellm_client.py` cannot parse tool calls (blocks ALL tool usage)
+- `code_tools.py` lacks `write_file` implementation (system cannot generate files)
+- `communication_tools.py` has empty stubs (delegation non-functional)
+- Beautiful class hierarchy exists, but execution layer is broken
+
+**Assessment Verdict:** "7/10 project with potential to be 9/10, but currently a beautiful architecture with no working implementation."
+
+### Decision
+
+**STOP all feature development.** Execute emergency refactor with MVP-first approach:
+
+**Week 1: Emergency Fixes**
+1. Fix LLM adapter tool calling (blocks everything)
+2. Implement sandboxed file I/O (security-critical)
+3. Prove ONE end-to-end flow works
+4. Integration tests
+
+**Week 2: Simplification**
+- Delete unused agents (keep Liaison + ProjectLead only)
+- Remove GovernanceAgent, ArtifactManager (premature optimization)
+- Remove WorkflowBuilder temporarily (add back post-MVP)
+- Prove simple delegation works
+
+**Week 3: Ship MVP**
+- ONE working flow: User → Liaison → ProjectLead → FileWriter → Disk
+- **Ship it**, then iterate
+
+**Week 4+: Rebuild Incrementally**
+- Add complexity back with tests at each step
+- DomainLeads → WorkflowBuilder → Executors → Governance
+
+### Rationale
+
+**Root Cause Analysis:**
+Fell into pattern common among smart engineers:
+1. Clear vision of end state
+2. Enjoy designing elegant systems  
+3. Comfortable with abstraction
+4. **Underestimate implementation complexity**
+
+**Result:** Documented ideal state before proving implementation feasible.
+
+**Senior Engineering Pattern (violated):**
+1. Spike/prototype core execution path ❌
+2. Prove it works end-to-end ❌
+3. Scale horizontally (add features)
+4. Document what you built (not what you wish you built)
+
+**We did this backwards.**
+
+**Key Principle:** "Complexity is the enemy of working software" - prove minimal system works, then scale up.
+
+### Consequences
+
+**✅ Benefits:**
+- Focus on execution layer (what actually matters)
+- Tests prevent regression as complexity returns
+- Working MVP demonstrates value immediately
+- Reduces technical debt accumulation
+- Forces documentation to match reality
+
+**⚠️ Trade-offs:**
+- Throw away some elegant design temporarily
+- Admitted failure of initial approach (ego hit)
+- Restart mid-project (morale risk)
+- Short-term: less impressive, long-term: actually works
+
+**🔴 Critical Requirements:**
+- No `exec()` without sandboxing (RCE vulnerability)
+- No blocking I/O in async contexts (architectural violation)
+- All code changes test-driven from this point forward
+- Documentation updated to match implementation (not aspirations)
+
+**Related:**
+- See `feedback/CURRENT.md` - Expert Systems Engineering Assessment (full analysis)
+- See `planning/CURRENT.md` - Emergency Refactor integrated into current phase priorities
+
+---
+
 ## Template: Adding New ADR
 
 When adding a new architecturedecision, use this format:

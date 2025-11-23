@@ -23,6 +23,45 @@ Following the completion of the Host-Native Infrastructure Pivot (archived), we 
 
 ---
 
+## Expert Systems Assessment: Emergency Refactor Required
+
+> [!CAUTION]
+> **Stop All Feature Development**: Expert review (2025-11-22) identified "Architecture Astronaut Trap" - we built elaborate hierarchy before proving core mechanics work.
+
+**Core Diagnosis:** "Beautiful architecture with no working implementation" - execution layer (LLM adapter, tool calling, file I/O) is stubbed or broken.
+
+**Root Cause:** Premature documentation and complexity. Documented ideal state before proving implementation feasible.
+
+### New Priority Order (Expert-Recommended)
+
+**Week 1: Emergency Fixes** ⚡ (CURRENT FOCUS)
+1. Fix `litellm_client.py` tool calling (BLOCKING ALL)
+2. Implement sandboxed `write_file` tool (security-critical)
+3. Wire ONE end-to-end flow (User → Agent → Tool → Response)
+4. Integration tests proving core loop works
+
+**Week 2: Simplification** 🔥
+- Delete unused agents (keep Liaison + Projectlead only)
+- Remove GovernanceAgent, ArtifactManager temporarily (premature optimization)
+- Remove WorkflowBuilder temporarily (add back after MVP)
+- Prove simple message passing works
+
+**Week 3: File Generation MVP** 🎯
+- ONE working flow: User → Liaison → ProjectLead → FileWriter → Disk
+- **Ship it**, then iterate
+
+**Week 4+: Rebuild Incrementally** 📈
+- Add DomainLeads back (with tests)
+- Add WorkflowBuilder orchestration (with tests)
+- Add Executors (with tests)
+- Re-integrate governance and observability
+
+**Key Principle:** "Complexity is the enemy of working software" - prove minimal system works, then scale up with tests at each step.
+
+**See:** `feedback/CURRENT.md` - Expert Systems Engineering Assessment for full analysis.
+
+---
+
 ## Critical Architectural Gaps
 
 Based on documentation review (`docs/.ai/agents.md`, `docs/vision/FUTURE.md`):

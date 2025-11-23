@@ -1,150 +1,206 @@
-import importlib
-import inspect
-import json
-from typing import List, Dict, Optional, Any
 import httpx
+from typing import Any, MutableSequence
+from collections.abc import AsyncIterable
 
-from src.clients.base import IChatClient
+from agent_framework import (
+    BaseChatClient,
+    ChatMessage,
+    ChatOptions,
+    ChatResponse,
+    ChatResponseUpdate,
+    FunctionCallContent,
+    Role,
+    TextContent,
+    use_function_invocation,
+    AIFunction
+)
+
 from src.config.settings import settings
 
 
-class LiteLLMChatClient(IChatClient):
+@use_function_invocation
+class LiteLLMChatClient(BaseChatClient):
     """
-    An asynchronous chat client using the LiteLLM proxy for unified access
-    to all LLM models.
+    MAF-compliant chat client using the LiteLLM proxy.
     
-    Updated to correctly transform MAF ToolSchema (flat) into OpenAI Tool Schema (nested).
+    This client extends BaseChatClient and uses the @use_function_invocation
+    decorator to enable automatic tool execution through MAF's framework.
     """
-    def __init__(self, model_name: str = "maf-default", agent_type: str = "Local-Dev"):
+    
+    def __init__(self, model_name: str = "maf-default", **kwargs):
+        super().__init__(**kwargs)
         self.base_url = settings.LITELLM_URL
         self.model_name = model_name
-        self.agent_type = agent_type
         self.api_key = settings.LITELLM_MASTER_KEY
 
-    async def chat(
-        self, 
-        history: List[Dict[str, str]], 
-        tools: List[Dict[str, Any]] | None = None,
-        tool_choice: Optional[Any] = None 
-    ) -> str:
+    async def _inner_get_response(
+        self,
+        *,
+        messages: MutableSequence[ChatMessage],
+        chat_options: ChatOptions,
+        **kwargs: Any,
+    ) -> ChatResponse:
         """
-        Sends the conversation history and available tools to the LiteLLM proxy.
-        """
+        Internal method to get a response from LiteLLM.
         
+        This method is called by BaseChatClient.get_response() and by the
+        @use_function_invocation decorator. It converts MAF objects to OpenAI
+        format for LiteLLM and converts the response back to M AF format.
+        """
+        # 1. Convert MAF ChatMessages to OpenAI format
+        history = []
+        for msg in messages:
+            msg_dict = {"role": str(msg.role)}
+            
+            # Handle different content types
+            if msg.text:
+                msg_dict["content"] = msg.text
+            elif msg.contents:
+                # Check for tool calls or function results
+                tool_calls = []
+                for content in msg.contents:
+                    if isinstance(content, FunctionCallContent):
+                        tool_calls.append({
+                            "id": content.call_id,
+                            "type": "function",
+                            "function": {
+                                "name": content.name,
+                                "arguments": content.arguments
+                            }
+                        })
+                
+                if tool_calls:
+                    msg_dict["tool_calls"] = tool_calls
+                    msg_dict["content"] = None  # Required by OpenAI when tool_calls present
+                elif any(hasattr(c, 'call_id') and hasattr(c, 'result') for c in msg.contents):
+                    # This is a tool result message
+                    for content in msg.contents:
+                        if hasattr(content, 'call_id') and hasattr(content, 'result'):
+                            msg_dict["tool_call_id"] = content.call_id
+                            msg_dict["content"] = str(content.result)
+                            msg_dict["role"] = "tool"
+                            break
+            
+            history.append(msg_dict)
+        
+        # 2. Convert MAF tools (AIFunction or callables) to OpenAI format
+        api_tools = None
+        if chat_options.tools:
+            from agent_framework import ai_function
+            api_tools = []
+            for tool in chat_options.tools:
+                # Convert callables to AIFunction
+                if callable(tool) and not isinstance(tool, AIFunction):
+                    tool = ai_function(tool)
+                
+                if isinstance(tool, AIFunction):
+                    # Extract schema from AIFunction
+                    tool_schema = tool.to_dict()
+                    api_tools.append({
+                        "type": "function",
+                        "function": {
+                            "name": tool_schema.get("name"),
+                            "description": tool_schema.get("description", ""),
+                            "parameters": tool_schema.get("input_schema", {})
+                        }
+                    })
+        
+        # 3. Prepare payload for LiteLLM
+        payload = {
+            "model": chat_options.model_id or self.model_name,
+            "messages": history,
+        }
+        
+        if api_tools:
+            payload["tools"] = api_tools
+            if chat_options.tool_choice:
+                payload["tool_choice"] = str(chat_options.tool_choice)
+        
+        # Add other chat options
+        if chat_options.temperature is not None:
+            payload["temperature"] = chat_options.temperature
+        if chat_options.max_tokens is not None:
+            payload["max_tokens"] = chat_options.max_tokens
+        
+        # 4. Call LiteLLM
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
         
-        # 1. TRANSFORM TOOLS (Critical Fix)
-        # Convert MAF flat dictionary format to OpenAI/LiteLLM nested format
-        api_tools = []
-        if tools:
-            for t in tools:
-                # If already in OpenAI format (has "type" and "function"), keep it
-                if "type" in t and "function" in t:
-                    api_tools.append(t)
-                # If in MAF ToolSchema format (has "function_name"), transform it
-                elif "function_name" in t:
-                    api_tools.append({
-                        "type": "function",
-                        "function": {
-                            "name": t["function_name"],
-                            "description": t.get("description", ""),
-                            "parameters": t.get("parameters", {})
-                        }
-                    })
-        
-        # Ensure None if empty list
-        final_tools = api_tools if api_tools else None
-
-        # 2. Prepare Payload
-        payload = {
-            "model": self.model_name,
-            "messages": history,
-            "tools": final_tools, 
-        }
-
-        # Add tool_choice only if tools are present
-        if final_tools:
-            if tool_choice:
-                # Convert ToolMode enum to string if needed
-                if hasattr(tool_choice, 'value'):
-                    payload["tool_choice"] = tool_choice.value
-                else:
-                    payload["tool_choice"] = str(tool_choice)
-            else:
-                payload["tool_choice"] = "auto"
-
         try:
-            # 3. Execute Request
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{self.base_url}/chat/completions", 
-                    json=payload, 
-                    headers=headers, 
+                    f"{self.base_url}/chat/completions",
+                    json=payload,
+                    headers=headers,
                     timeout=60.0
                 )
                 response.raise_for_status()
                 data = response.json()
-
-            # 4. Return full response data for adapter to parse
-            return data
-
         except httpx.HTTPStatusError as e:
             error_detail = e.response.json().get('error', {}).get('message', str(e))
-            return f"LiteLLM HTTP Error: {error_detail}"
+            raise RuntimeError(f"LiteLLM HTTP Error: {error_detail}")
         except Exception as e:
-            return f"An unexpected error occurred in LiteLLMClient: {e}"
-
-    async def get_response(
-        self,
-        messages: str | Any | list[str] | list[Any],
-        *,
-        tools: Optional[list] = None,
-        tool_choice: Optional[Any] = None,
-        **kwargs: Any,
-    ) -> Any:
-        """
-        Adapter method to satisfy agent_framework.ChatClientProtocol.
-        Converts MAF SDK types to LiteLLM format and back.
-        """
-        from agent_framework import ChatMessage, ChatResponse
+            raise RuntimeError(f"LiteLLM request failed: {e}")
         
-        # Normalize messages to List[Dict[str, str]]
-        history = []
-        if isinstance(messages, str):
-            history.append({"role": "user", "content": messages})
-        elif hasattr(messages, "role") and hasattr(messages, "text"): # ChatMessage
-            history.append({"role": str(messages.role), "content": messages.text})
-        elif isinstance(messages, list):
-            for msg in messages:
-                if isinstance(msg, str):
-                    history.append({"role": "user", "content": msg})
-                elif hasattr(msg, "role") and hasattr(msg, "text"): # ChatMessage
-                    history.append({"role": str(msg.role), "content": msg.text})
-        
-        # Call existing chat method
-        response_data = await self.chat(history, tools, tool_choice)
-        
-        if isinstance(response_data, str):
-             # Error occurred
-             return ChatResponse(text=f"Error: {response_data}")
-             
-        # Extract content from response_data
-        # OpenAI format: choices[0].message.content
+        # 5. Convert OpenAI response back to MAF ChatResponse
         try:
-            choice = response_data['choices'][0]
-            message = choice['message']
-            content = message.get('content')
+            choice = data['choices'][0]
+            message_data = choice['message']
+            content_text = message_data.get('content')
+            tool_calls = message_data.get('tool_calls')
             
-            # Handle tool calls if present
-            # (For now, we just return text, but MAF might need tool calls in the response)
-            # If content is None (tool call only), we should probably handle that.
+            contents = []
             
-            if content is None:
-                content = ""
-                
-            return ChatResponse(text=content)
-        except (KeyError, IndexError):
-            return ChatResponse(text=str(response_data))
+            # Add text content if present
+            if content_text:
+                contents.append(TextContent(text=content_text))
+            
+            # Add tool calls if present
+            if tool_calls:
+                for tc in tool_calls:
+                    if tc.get('type') == 'function':
+                        func = tc.get('function', {})
+                        contents.append(FunctionCallContent(
+                            call_id=tc.get('id'),
+                            name=func.get('name'),
+                            arguments=func.get('arguments')
+                        ))
+            
+            # Create ChatMessage
+            chat_message = ChatMessage(
+                role=Role.ASSISTANT,
+                contents=contents
+            )
+            
+            return ChatResponse(
+                messages=[chat_message],
+                response_id=data.get('id', 'litellm-response')
+            )
+            
+        except (KeyError, IndexError) as e:
+            raise RuntimeError(f"Error parsing LiteLLM response: {e}")
+
+    async def _inner_get_streaming_response(
+        self,
+        *,
+        messages: MutableSequence[ChatMessage],
+        chat_options: ChatOptions,
+        **kwargs: Any,
+    ) -> AsyncIterable[ChatResponseUpdate]:
+        """
+        Streaming is not yet implemented for LiteLLM.
+        """
+        # For now, fall back to non-streaming
+        response = await self._inner_get_response(
+            messages=messages,
+            chat_options=chat_options,
+            **kwargs
+        )
+        # Yield the complete response as a single update
+        for msg in response.messages:
+            yield ChatResponseUpdate(
+                role=msg.role,
+                contents=msg.contents
+            )

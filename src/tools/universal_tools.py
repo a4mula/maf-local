@@ -181,6 +181,11 @@ class ToolRegistry:
         """Get tools in Ollama format."""
         return [tool.to_ollama_format() for tool in self.tools.values()]
     
+    def get_ai_functions(self) -> List[Any]:
+        """Get tools as MAF AIFunction objects."""
+        from agent_framework import ai_function
+        return [ai_function(tool.func) for tool in self.tools.values()]
+    
     def get_tool(self, name: str) -> UniversalTool:
         """Get a specific tool by name."""
         return self.tools.get(name)

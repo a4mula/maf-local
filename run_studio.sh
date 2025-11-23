@@ -36,7 +36,7 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 # 5. Start Agent API (Background)
 echo -e "${GREEN}🤖 Starting Agent API on port 8002...${NC}"
-uvicorn src.main:app --host 0.0.0.0 --port 8002 > agent.log 2>&1 &
+python -m src.api_server > agent.log 2>&1 &
 AGENT_PID=$!
 
 # 6. Start Streamlit UI (Foreground)
