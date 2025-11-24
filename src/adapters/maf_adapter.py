@@ -4,8 +4,20 @@ from src.clients.litellm_client import LiteLLMChatClient
 import json
 
 # Import universal tools
-import src.tools
-from src.tools.universal_tools import registry
+from src.tools import ALL_TOOLS
+
+
+def get_maf_tools():
+    """
+    Returns MAF-compliant AIFunction tools.
+    
+    This function provides a clean interface for retrieving tools
+    that are already decorated with @ai_function.
+    
+    Returns:
+        List of AIFunction objects ready for ChatAgent registration
+    """
+    return ALL_TOOLS
 
 
 class LiteLLMModelClient(BaseChatClient):
@@ -73,8 +85,21 @@ class LiteLLMModelClient(BaseChatClient):
                     "content": msg.text if hasattr(msg, 'text') else str(msg.content)
                 })
 
-        # 2. Get tools in LiteLLM format from universal registry
-        litellm_tools = registry.get_litellm_tools() if chat_options.tools else None
+        # 2. Get tools in LiteLLM format - convert MAF AIFunctions directly
+        litellm_tools = None
+        if chat_options.tools:
+            litellm_tools = []
+            for tool in chat_options.tools:
+                # Each tool is already an AIFunction from @ai_function decorator
+                tool_schema = tool.to_dict()
+                litellm_tools.append({
+                    "type": "function",
+                    "function": {
+                        "name": tool_schema.get("name"),
+                        "description": tool_schema.get("description", ""),
+                        "parameters": tool_schema.get("input_schema", {})
+                    }
+                })
         
         # 3. Get tool_choice from chat_options
         tool_choice = None

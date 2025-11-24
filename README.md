@@ -7,6 +7,8 @@ This repository provides a complete, containerized studio for building, testing,
 ---
 
 - **Containerized Workflow**: One-command startup via Docker Compose.
+- **Host-Native Agents**: Agents run natively for performance and file access.
+- **4-Tier Hierarchy**: Strict separation of Strategy, Tactics, and Execution.
 
 ---
 
@@ -97,10 +99,43 @@ maf-local/
 ├── docs/                   # Documentation (Planning, Vision, Feedback)
 ├── scripts/                # Utility scripts (Startup, Migrations)
 ├── src/                    # Source code for Agents and API
+│   ├── agents/
+│   │   ├── executors/      # Tier 4: Coder, Tester, Writer
+│   │   ├── domain_leads/   # Tier 3: Dev, QA, Docs
+│   │   └── ...
+│   ├── workflows/          # OLB and TLB Workflows
+│   ├── tools/              # MAF @ai_function tools
+│   └── ...
 ├── tests/                  # Unit and Verification tests
 ├── ui-next/                # Next.js source for Live Graph
 └── docker-compose.yaml     # Service orchestration
 ```
+
+---
+
+## 🏗️ Architecture (Phase 2 Status)
+
+The system implements a **4-Tier Unified Batching Engine (UBE)** architecture:
+
+```
+Tier 1: Interface
+   [LiaisonAgent]
+        ↓
+Tier 2: Orchestration (Strategy)
+   [ProjectLeadAgent] ↔ [DocumentationAgent] (Peers)
+        ↓ (OLB Workflow)
+Tier 3: Tactical (Domain Leads)
+   [DevDomainLead] [QADomainLead] [DocsDomainLead]
+        ↓ (TLB Workflow)
+Tier 4: Execution (Atomic)
+   [CoderExecutor] [TesterExecutor] [WriterExecutor]
+```
+
+### Key Components:
+- **OLB (Orchestration Level Batcher):** Routes strategic plans to Domain Leads.
+- **TLB (Tactical Level Batcher):** Orchestrates parallel execution of atomic tasks.
+- **PermissionFilter:** Enforces Principle of Least Authority (PoLA) for file operations.
+- **Pure MAF Tools:** All tools use standard `@ai_function` decorators with Pydantic models.
 
 ---
 
@@ -115,7 +150,7 @@ This project uses an **agent-optimized documentation system** designed for both 
 **Quick Links:**
 - 🚀 [Quick Start Guide](./docs/guides/QUICKSTART.md) - Get up and running in 10 minutes
 - 🏗️ [Current Architecture](./docs/architecture/CURRENT.md) - System design and components
-- 📋 [Current Phase](./docs/planning/CURRENT.md) - Post-Refactor Stabilization
+- 📋 [Current Phase](./docs/planning/CURRENT.md) - Phase 2: UBE Expansion
 - ❓ [Why Hierarchical Agents?](./docs/why/RATIONALE.md) - Design rationale
 - 🔮 [Vision](./docs/vision/FUTURE.md) - Long-term roadmap
 
@@ -134,12 +169,6 @@ This project uses an **agent-optimized documentation system** designed for both 
 - What is the system? → [`architecture/CURRENT.md`](./docs/architecture/CURRENT.md)
 - Why does X exist? → [`why/RATIONALE.md`](./docs/why/RATIONALE.md)
 - What needs fixing? → [`feedback/CURRENT.md`](./docs/feedback/CURRENT.md)
-
-**Documentation Update Rules:**
-- ✅ Agents can read all docs
-- ⚠️ Check YAML `access:` frontmatter before writing
-- 📝 Use templates from `MANIFEST.yaml`
-- 🔒 Architecture decisions require human approval
 
 ---
 

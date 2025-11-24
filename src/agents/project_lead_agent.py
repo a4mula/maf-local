@@ -1,16 +1,15 @@
 from agent_framework import ChatAgent
-from src.tools.universal_tools import registry
-import src.tools.code_tools # Ensure tools are registered
+from src.tools import ALL_TOOLS
 import os
 
-class ProjectLeadAgent:
+class ProjectLeadAgent(ChatAgent):
     """
-    Tier 2: Strategic Director
+    Tier 2: Strategic Director (MAF-Compliant)
     - Makes high-level technical decisions
     - Delegates to Domain Leads
+    - Outputs STRATEGIC PLANS (StrategicPlan AFBaseSettings model)
     """
     def __init__(self, chat_client):
-        
         # Dynamic Project Context Loading
         context = ""
         context_paths = [
@@ -44,23 +43,40 @@ class ProjectLeadAgent:
                 except Exception as e:
                     print(f"Warning: Could not load project context: {e}")
 
-        # Create MAF ChatAgent with tools
-        self.sdk_agent = ChatAgent(
+        # Initialize MAF ChatAgent via inheritance (CRITICAL FIX)
+        super().__init__(
             name="ProjectLead",
-            instructions=f"Make technical decisions. Create workflows. Delegate to DLs.\n\nCurrent Project Context:{context}",
-            tools=registry.get_ai_functions(),  # Use MAF AIFunction objects
+            instructions=f"""You are the Project Lead. You output STRATEGIC PLANS.
+
+Your responsibilities:
+- Make high-level technical decisions
+- Break down user requests into strategic plans
+- Delegate to Domain Leads (when OLB is implemented)
+- Query DocumentationAgent for context before planning
+
+Current Project Context:{context}""",
+            tools=ALL_TOOLS,  # Direct tool list - MAF compliant
             chat_client=chat_client
         )
 
     async def receive_idea(self, idea: str):
+        """Process user idea and return strategic plan.
+        
+        This method will eventually:
+        1. Query DocumentationAgent for relevant context (A2A)
+        2. Generate StrategicPlan (typed output)
+        3. Submit to OLB for routing to Domain Leads
+        
+        For now (Phase 1): Returns direct LLM response via ChatAgent.run()
+        """
         print(f"[ProjectLead] Received idea: {idea}")
         
-        # Use the MAF ChatAgent to process the idea
-        # The @use_function_invocation decorator on the client handles tool execution
+        # Use inherited ChatAgent.run() method
+        # The @use_function_invocation decorator on the client handles tool execution automatically
         from agent_framework import AgentThread
         
         thread = AgentThread()
-        response = await self.sdk_agent.run(idea, thread=thread)
+        response = await self.run(idea, thread=thread)  # Use inherited run() method
         response_text = response.text if hasattr(response, 'text') else str(response)
 
         # Log the decision (simplified)

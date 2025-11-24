@@ -1,142 +1,123 @@
-# Current Phase: Post-Refactor Stabilization
+# Current Phase: Phase 2 - UBE Expansion
 
-**Last Updated:** 2025-11-23  
-**Status:** ✅ **EMERGENCY REFACTOR COMPLETE - MVP OPERATIONAL**
+**Last Updated:** 2025-11-24
+**Status:** 🚧 **PHASE 2 IN PROGRESS - EXECUTOR TIER COMPLETE**
 
 ---
 
 ## Overview
 
-Following the completion of the Emergency Refactor (Weeks 1-4, November 2025), the MAF Local project now has a **working MVP** with MAF-compliant tool execution and file generation capabilities.
+We are currently executing **Phase 2** of the Unified Batching Engine (UBE) architecture plan. The goal is to expand the simplified 2-tier MVP into a robust 4-tier hierarchy with strict separation of concerns, mediated by batching workflows.
 
 **Current State:**
-- ✅ Infrastructure operational (DB, AI models, UI running)
-- ✅ MAF-compliant `LiteLLMChatClient` with `@use_function_invocation` decorator
-- ✅ Tool execution working (agents can create files on disk)
-- ✅ Integration tests passing
-- ✅ Simplified 2-tier architecture proven functional
+- ✅ **Phase 1 Foundations Complete:** ProjectLeadAgent inheritance fixed, DocumentationAgent created, PermissionFilter implemented.
+- ✅ **Tool System Refactored:** All tools converted to pure MAF `@ai_function` with Pydantic models. `UniversalTool` registry removed.
+- ✅ **Executor Tier Implemented:** `BaseExecutor`, `CoderExecutor`, `TesterExecutor`, `WriterExecutor` created and tested (8/8 tests pass).
+- ✅ **TLB Workflow Implemented:** `TLBWorkflow` created for parallel executor execution and report aggregation (7/7 tests pass).
+- ✅ **Regression Testing:** All Phase 1 tests (29/29) still passing. Total test count: 44/44.
 
 **Previous Issues (NOW RESOLVED):**
-- ✅ Tool calling fixed - `LiteLLMChatClient` extends `BaseChatClient`
-- ✅ File I/O implemented - `write_file` tool with path sandboxing
-- ✅ Architecture simplified - removed premature complexity
-- ✅ End-to-end flow verified - User → Liaison → ProjectLead → Tools → Response
+- ✅ `UniversalTool` technical debt eliminated.
+- ✅ `ProjectLeadAgent` inheritance fixed (proper `ChatAgent` subclass).
+- ✅ `PermissionFilter` implemented as true MAF `FunctionMiddleware`.
+- ✅ Data contracts (`ExecutorReport`, `StrategicPlan`) defined and enforced.
 
 ---
 
-## Emergency Refactor Summary (ARCHIVED)
+## Current Architecture (Phase 2 Status)
 
-> [!NOTE]
-> **Phase Complete:** All four weeks of the emergency refactor have been completed successfully.
-
-### Week 1: Emergency Fixes ✅ (COMPLETE)
-1. ✅ Fixed `litellm_client.py` tool calling
-2. ✅ Implemented sandboxed `write_file` tool
-3. ✅ Wired end-to-end flow (User → Agent → Tool → Response)
-4. ✅ Integration tests proving core loop works
-
-### Week 2: Simplification ✅ (COMPLETE)
-- ✅ Deleted unused agents (DomainLead, Executor, Governance, ContextRetrieval, ArtifactManager)
-- ✅ Kept only Liaison + ProjectLead
-- ✅ Proved simple message passing works
-
-### Week 3: File Generation MVP ✅ (COMPLETE)
-- ✅ Working flow: User → Liaison → ProjectLead → write_file → Disk
-- ✅ Verified with real agent interaction (demo.txt created successfully)
-
-### Week 4: MAF-Compliant Client ✅ (COMPLETE)
-- ✅ Refactored `LiteLLMChatClient` to extend `BaseChatClient`
-- ✅ Applied `@use_function_invocation` decorator
-- ✅ Converted tools to `AIFunction` objects using `ai_function()`
-- ✅ Deleted custom `CoreAgent` (no longer needed)
-- ✅ All integration tests pass
-
-**Result:** Tool integration issues permanently resolved by properly integrating with MAF's native patterns.
-
----
-
-## Current Architecture
-
-### Agent Hierarchy
+### Agent Hierarchy (Target State)
 ```
 User
   ↓
-LiaisonAgent (Tier 1) - Intent Classification, Routing
+LiaisonAgent (Tier 1) - Intent Classification
   ↓
-ProjectLeadAgent (Tier 2) - Decision Making, Tool Execution
+ProjectLeadAgent (Tier 2) ↔ DocumentationAgent (Tier 2 Peer)
+  ↓ (StrategicPlan via OLB)
+Domain Leads (Tier 3) - Dev, QA, Docs
+  ↓ (Task Breakdown via TLB)
+Executors (Tier 4) - Coder, Tester, Writer
 ```
 
-**Implementation:**
-- Both agents use MAF's standard `ChatAgent` class
-- Tools provided as `AIFunction` objects from `universal_tools.registry`
-- Tool execution handled automatically by `@use_function_invocation` decorator
-- No custom execution loops required
+### Implementation Status
 
-### Available Tools
-- **write_file** - Create files on disk with path validation
-- **execute_code** - Execute Python code (sandboxed via io.StringIO)
+#### Tier 1: Interface
+- **LiaisonAgent:** ✅ Operational (MVP)
 
-### Tests
-- `tests/integration/test_factory_startup.py` - Agent instantiation
-- `tests/integration/test_message_passing.py` - Liaison → ProjectLead flow
-- `tests/integration/test_file_generation_flow.py` - Tool registration verification
-- `tests/unit/test_litellm_tool_parsing.py` - LiteLLM response parsing
-- `tests/unit/test_secure_file_io.py` - File writing security
+#### Tier 2: Orchestration
+- **ProjectLeadAgent:** ✅ Operational (MAF-compliant, uses `ALL_TOOLS`)
+- **DocumentationAgent:** ✅ Operational (Knowledge Gate, PoLA Gatekeeper)
 
----
+#### Tier 3: Tactical (Domain Leads)
+- **DevDomainLead:** 🚧 Planned (Next Step)
+- **QADomainLead:** 🚧 Planned
+- **DocsDomainLead:** 🚧 Planned
 
-## Next Steps (Future Phase)
+#### Tier 4: Execution
+- **CoderExecutor:** ✅ Operational (Atomic execution, `execute_code` tool)
+- **TesterExecutor:** ✅ Operational (Atomic execution, `execute_code` tool)
+- **WriterExecutor:** ✅ Operational (Atomic execution, no tools)
 
-> [!TIP]
-> **Principle:** Incremental complexity - each new feature must have tests before integration.
-
-### Phase 5: Observability & Monitoring (Proposed)
-- Add structured logging for tool execution
-- Implement metrics collection for agent performance
-- Create Grafana dashboards for real-time monitoring
-
-### Phase 6: Domain Lead Reintegration (Proposed)
-- Re-add DomainLeadAgent classes (Dev, QA, Docs)
-- Implement proper MAF Workflow orchestration
-- Add delegation tests before deploying
-
-### Phase 7: Advanced Tool Set (Proposed)
-- Code analysis tools (linting, complexity analysis)
-- Testing tools (pytest execution, coverage)
-- Deployment tools (Docker, Git integration)
+#### Workflows (Batchers)
+- **TLB (Tactical Level Batcher):** ✅ Implemented (MVP sequential execution, report aggregation)
+- **OLB (Orchestration Level Batcher):** 🚧 Planned (Step 8)
 
 ---
 
-## Known Limitations
+## Recent Achievements (Nov 24, 2025)
 
-1. **Limited Hierarchy** ⚠️
-   - Only 2-tier architecture currently
-   - Future: Rebuild multi-tier with proper workflows
+### 1. Tool System Refactor ✅
+- **Problem:** `UniversalTool` wrapper was unnecessary technical debt.
+- **Solution:** Converted all tools to native MAF `@ai_function` with Pydantic input models.
+- **Result:** Cleaner code, better type safety, full MAF compliance.
 
-2. **Basic Tool Set** ⚠️
-   - Only file writing and code execution
-   - Future: Add comprehensive development tools
+### 2. Executor Tier Implementation ✅
+- **Problem:** No specialized agents for atomic tasks.
+- **Solution:** Created `BaseExecutor` and concrete implementations (`Coder`, `Tester`, `Writer`).
+- **Result:** Executors produce structured `ExecutorReport` objects and escalate ambiguity.
 
-3. **Manual Database Setup** ⚠️
-   - UI shows errors for missing projects/sessions tables
-   - Non-critical (chat endpoint works fine)
-   - Future: Add database migrations
+### 3. TLB Workflow ✅
+- **Problem:** No mechanism to manage parallel execution.
+- **Solution:** Created `TLBWorkflow` to orchestrate executors and aggregate results.
+- **Result:** 7/7 tests passing for task execution and aggregation.
+
+---
+
+## Next Steps (Phase 2 Roadmap)
+
+> [!IMPORTANT]
+> **Immediate Focus:** Implementing the Domain Lead tier to bridge the gap between Project Lead and Executors.
+
+### Step 6: Domain Lead Agents (Next)
+- Create `src/agents/domain_leads/`
+- Implement `BaseDomainLead` class
+- Implement `DevDomainLead`
+- Integrate with TLB workflow
+
+### Step 7: Domain Lead Tests
+- Test DL → TLB → Executor flow
+- Test task breakdown logic
+
+### Step 8: OLB Workflow
+- Implement `OLBWorkflow` using MAF `SwitchCaseEdgeGroup`
+- Route `StrategicPlan` to correct Domain Leads
+
+### Step 9: Full Integration
+- Update `ProjectLeadAgent` to output `StrategicPlan`
+- Connect PL → OLB → DL → TLB → Executor
 
 ---
 
 ## Documentation Status
 
-**Recently Updated (Nov 23, 2025):**
-- ✅ `docs/architecture/CURRENT.md` - Reflects simplified architecture
-- ✅ `docs/guides/QUICKSTART.md` - Updated capabilities and troubleshooting
-- ✅ `docs/planning/CURRENT.md` - This file
-
-**Next Review:** After Phase 5 completion
+- ✅ `docs/planning/CURRENT.md` - Updated to reflect Phase 2 progress.
+- ⚠️ `docs/architecture/CURRENT.md` - Needs update to reflect 4-tier architecture.
+- ✅ `walkthrough.md` - Comprehensive log of all changes.
 
 ---
 
 ## Reference Materials
 
-- **Refactor Walkthrough:** See `/home/robb/.gemini/antigravity/brain/.../walkthrough.md`
-- **Tool Strategy:** See `/home/robb/.gemini/antigravity/brain/.../tool_strategy_assessment.md`
-- **Vision:** See `docs/vision/FUTURE.md` for long-term roadmap
+- **Walkthrough:** `/home/robb/.gemini/antigravity/brain/.../walkthrough.md`
+- **Task List:** `/home/robb/.gemini/antigravity/brain/.../task.md`
+- **Feedback:** `docs/feedback/feedback.md` (Architectural Vision)
