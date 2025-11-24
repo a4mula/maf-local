@@ -48,9 +48,12 @@ class TestAgentFactory:
         assert "project_lead" in hierarchy  # Tier 2
         assert "documentation_agent" in hierarchy  # Tier 2
         
-        # Phase 2 agents should be empty
-        assert hierarchy["domain_leads"] == {}
-        assert hierarchy["executors"] == {}
+        # Phase 2 agents should now be populated
+        assert hierarchy["domain_leads"] != {}
+        assert "Development" in hierarchy["domain_leads"]
+        
+        assert hierarchy["executors"] != {}
+        assert "coder" in hierarchy["executors"]
 
 
 class TestProjectLeadAgentCompliance:
