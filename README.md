@@ -145,30 +145,28 @@ This project uses an **agent-optimized documentation system** designed for both 
 
 ### For Humans 👥
 
-**Start here:** [`docs/INDEX.md`](./docs/INDEX.md) - Complete documentation navigation guide
+**Start here:** [`docs/README.md`](./docs/README.md) - Complete documentation navigation guide
 
 **Quick Links:**
-- 🚀 [Quick Start Guide](./docs/guides/QUICKSTART.md) - Get up and running in 10 minutes
-- 🏗️ [Current Architecture](./docs/architecture/CURRENT.md) - System design and components
-- 📋 [Current Phase](./docs/planning/CURRENT.md) - Phase 2: UBE Expansion
-- ❓ [Why Hierarchical Agents?](./docs/why/RATIONALE.md) - Design rationale
-- 🔮 [Vision](./docs/vision/FUTURE.md) - Long-term roadmap
+- 🚀 [Quick Start Guide](./docs/03_GUIDES/QUICKSTART.md) - Get up and running in 10 minutes
+- 🏗️ [Current Architecture](./docs/01_ARCHITECTURE/CURRENT.md) - System design and components
+- 📋 [Current Tasks](./docs/02_PLANNING/TASKS.md) - Active work
+- ❓ [Why Hierarchical Agents?](./docs/00_META/PHILOSOPHY.md) - Design rationale
+- 🔮 [Vision](./docs/02_PLANNING/ROADMAP.md) - Long-term roadmap
 
 ### For Agents 🤖
 
-**Agent Workspace:** [`docs/.ai/`](./docs/.ai/)
+**Agent Workspace:** [`docs/00_META/.ai/`](./docs/00_META/.ai/)
 
 **Required Reading (in order):**
-1. [`GUIDELINES.md`](./docs/.ai/GUIDELINES.md) - Coding standards and MAF SDK compliance rules
-2. [`MANIFEST.yaml`](./docs/.ai/MANIFEST.yaml) - Feature tracking and navigation shortcuts
-3. [`agents.md`](./docs/.ai/agents.md) - Agent roles, tools, and boundaries
+1. [`GUIDELINES.md`](./docs/00_META/.ai/GUIDELINES.md) - Coding standards and MAF SDK compliance rules
+2. [`MANIFEST.yaml`](./docs/00_META/.ai/MANIFEST.yaml) - Feature tracking and navigation shortcuts
+3. [`agents.md`](./docs/00_META/.ai/agents.md) - Agent roles, tools, and boundaries
 
 **Navigation Shortcuts:**
-- What am I working on? → [`planning/CURRENT.md`](./docs/planning/CURRENT.md)
-- What happened before? → [`planning/ARCHIVE.md`](./docs/planning/ARCHIVE.md)
-- What is the system? → [`architecture/CURRENT.md`](./docs/architecture/CURRENT.md)
-- Why does X exist? → [`why/RATIONALE.md`](./docs/why/RATIONALE.md)
-- What needs fixing? → [`feedback/CURRENT.md`](./docs/feedback/CURRENT.md)
+- What am I working on? → [`02_PLANNING/TASKS.md`](./docs/02_PLANNING/TASKS.md)
+- What is the system? → [`01_ARCHITECTURE/CURRENT.md`](./docs/01_ARCHITECTURE/CURRENT.md)
+- Why does X exist? → [`00_META/PHILOSOPHY.md`](./docs/00_META/PHILOSOPHY.md)
 
 ---
 
