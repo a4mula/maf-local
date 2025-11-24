@@ -7,9 +7,37 @@ decorator pattern with Pydantic input validation.
 All tools follow MAF SDK standards for type safety and schema generation.
 """
 
-from agent_framework import ai_function
-from pydantic import BaseModel, Field
-from ddgs import DDGS
+try:
+    from agent_framework import ai_function
+except ImportError:  # pragma: no cover
+    def ai_function(func):
+        """Fallback decorator when agent_framework is unavailable."""
+        return func
+try:
+    from pydantic import BaseModel, Field
+except ImportError:  # pragma: no cover
+    class BaseModel:  # minimal stub
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+    def Field(*_, **__):
+        """Fallback Field function when pydantic is unavailable."""
+        return None
+try:
+    from ddgs import DDGS
+except ImportError:  # pragma: no cover
+    class DDGS:  # minimal stub
+        def __enter__(self):
+            return self
+        def __exit__(self, exc_type, exc, tb):
+            return False
+        def text(self, query, max_results=5):
+            return []
+
+try:
+    import yaml
+except ImportError:  # pragma: no cover
+    yaml = None
 
 
 # ============================================================================

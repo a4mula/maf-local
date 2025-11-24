@@ -88,3 +88,41 @@ class TestTaskDecomposition:
         # We'll test the private method if possible, or skip deep logic testing
         # in favor of integration tests.
         pass
+
+
+from src.agents.domain_leads import DocsDomainLead
+
+@pytest.fixture
+def docs_dl(chat_client, mock_tlb):
+    """Create DocsDomainLead instance."""
+    return DocsDomainLead(chat_client=chat_client, tlb_workflow=mock_tlb)
+
+class TestDocsDomainLead:
+    """Tests for DocsDomainLead agent."""
+    
+    def test_docs_dl_creation(self, docs_dl):
+        """DocsDomainLead should be created successfully."""
+        assert docs_dl is not None
+        assert docs_dl.name == "DocumentationDomainLead"
+        assert docs_dl.domain == "Documentation"
+        assert docs_dl.tlb_workflow is not None
+        
+    @pytest.mark.asyncio
+    async def test_docs_dl_executes_task(self, docs_dl, mock_tlb):
+        """DocsDomainLead should execute a task via TLB."""
+        thread = AgentThread()
+        task_def = TaskDefinition(
+            task_id="task_002",
+            domain="Documentation",
+            description="Update README.md",
+            assigned_to="DocsDL"
+        )
+        
+        result = await docs_dl.execute_task(task_def, thread)
+        
+        # Verify TLB was called
+        mock_tlb.execute_tasks.assert_called_once()
+        
+        # Verify result structure
+        assert result["task_id"] == "task_002"
+        assert result["status"] == "Completed"

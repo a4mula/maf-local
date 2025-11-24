@@ -2,7 +2,7 @@
 
 **Purpose:** Define the target architecture for MAF Local's multi-tier agent system  
 **Status:** Design specification (not yet fully implemented)  
-**Current State:** 2-tier MVP (Liaison → ProjectLead)
+**Current State:** Phase 2 UBE (4-Tier)
 
 ---
 

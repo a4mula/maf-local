@@ -3,7 +3,7 @@ from src.agents import (
     ProjectLeadAgent
 )
 from src.agents.documentation_agent import DocumentationAgent
-from src.agents.domain_leads import DevDomainLead
+from src.agents.domain_leads import DevDomainLead, DocsDomainLead
 from src.agents.executors import CoderExecutor, TesterExecutor, WriterExecutor
 from src.workflows.tlb_workflow import TLBWorkflow
 from src.workflows.olb_workflow import OLBWorkflow
@@ -41,8 +41,11 @@ class AgentFactory:
         dev_dl = DevDomainLead(chat_client=client, tlb_workflow=tlb_workflow)
         # Future: qa_dl, docs_dl
 
+        docs_dl = DocsDomainLead(chat_client=client, tlb_workflow=tlb_workflow)
+
         domain_leads = {
-            "Development": dev_dl
+            "Development": dev_dl,
+            "Documentation": docs_dl
         }
 
         # --- Workflows: OLB ---

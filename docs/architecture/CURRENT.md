@@ -36,8 +36,8 @@ Tier 4: Execution (Atomic)
 | **LiaisonAgent** | 1 | ✅ Active | Intent classification, routing |
 | **ProjectLeadAgent** | 2 | ✅ Active | Strategic planning, MAF-compliant |
 | **DocumentationAgent** | 2 | ✅ Active | Knowledge gate, PoLA gatekeeper |
-| **OLB Workflow** | - | 🚧 Planned | Routes plans to Domain Leads |
-| **Domain Leads** | 3 | 🚧 Planned | Task breakdown, TLB orchestration |
+| **OLB Workflow** | - | ✅ Implemented | Routes plans to Domain Leads |
+| **Domain Leads** | 3 | ✅ Active | Task breakdown, TLB orchestration |
 | **TLB Workflow** | - | ✅ Active | Parallel executor orchestration |
 | **Executors** | 4 | ✅ Active | Atomic task execution, report generation |
 
@@ -73,7 +73,7 @@ maf-local/
 ├── src/
 │   ├── agents/
 │   │   ├── executors/        # Tier 4: Coder, Tester, Writer
-│   │   ├── domain_leads/     # Tier 3: Dev, QA, Docs (Coming Soon)
+│   │   ├── domain_leads/     # Tier 3: Dev, Docs
 │   │   ├── project_lead_agent.py
 │   │   ├── documentation_agent.py
 │   │   └── liaison_agent.py
@@ -90,6 +90,7 @@ maf-local/
 
 1.  **Executor Tier (Tier 4):** Implemented specialized agents for atomic tasks.
 2.  **TLB Workflow:** Implemented orchestration for parallel execution.
+3.  **Domain Leads:** Implemented DevDomainLead and DocsDomainLead.
 3.  **Tool Refactor:** Eliminated technical debt, achieved 100% MAF compliance.
 4.  **Governance:** Implemented `PermissionFilter` middleware.
 

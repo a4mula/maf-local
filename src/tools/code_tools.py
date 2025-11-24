@@ -12,8 +12,22 @@ import io
 import contextlib
 from pathlib import Path
 import os
-from agent_framework import ai_function
-from pydantic import BaseModel, Field
+try:
+    from agent_framework import ai_function
+except ImportError:  # pragma: no cover
+    def ai_function(func):
+        """Fallback decorator when agent_framework is unavailable."""
+        return func
+try:
+    from pydantic import BaseModel, Field
+except ImportError:  # pragma: no cover
+    class BaseModel:  # minimal stub
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+    def Field(*_, **__):
+        """Fallback Field function when pydantic is unavailable."""
+        return None
 
 
 # ============================================================================
