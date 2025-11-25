@@ -25,6 +25,12 @@ This document provides an overview of all public agent classes in the **maf‑lo
 - **BaseDomainLead** – Abstract base class (`src/agents/domain_leads/base_domain_lead.py`).
 - **DevDomainLead** – Implements development‑task execution.
 - **DocsDomainLead** – Implements documentation‑task execution.
-- **QADomainLead** – *Planned but not yet implemented.*
+- **QADomainLead** – Implements QA‑task execution (now implemented).
+
+## Executors (Tier 4)
+- **CoderExecutor** – Writes code artifacts.
+- **TesterExecutor** – Writes test artifacts.
+- **WriterExecutor** – Writes documentation artifacts.
+- **ResearchExecutor** – Performs cached research tasks.
 
 Each domain lead breaks down a high‑level task into subtasks and dispatches them to the appropriate executor via the TLB workflow.

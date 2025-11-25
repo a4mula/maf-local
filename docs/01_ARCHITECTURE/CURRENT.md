@@ -28,6 +28,16 @@ Tier 3: Tactical (Domain Leads)
 Tier 4: Execution (Atomic)
    [CoderExecutor] [TesterExecutor] [WriterExecutor]
 ```
+```mermaid
+graph TD
+    LiaisonAgent --> ProjectLeadAgent
+    ProjectLeadAgent -->|OLB| DevDomainLead
+    ProjectLeadAgent -->|OLB| QADomainLead
+    ProjectLeadAgent -->|OLB| DocsDomainLead
+    DevDomainLead -->|TLB| CoderExecutor
+    QADomainLead -->|TLB| TesterExecutor
+    DocsDomainLead -->|TLB| WriterExecutor
+```
 
 ### 2. Implementation Status
 
