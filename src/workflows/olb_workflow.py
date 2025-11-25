@@ -15,8 +15,11 @@ Design:
 from agent_framework import AgentThread
 from src.models.data_contracts import StrategicPlan, TaskDefinition
 from src.agents.domain_leads.base_domain_lead import BaseDomainLead
+from src.utils import get_logger
 from typing import Dict, Any, List
 from datetime import datetime
+
+logger = get_logger(__name__)
 
 
 class OLBWorkflow:
@@ -59,7 +62,7 @@ class OLBWorkflow:
         Returns:
             Aggregated execution summary
         """
-        print(f"[OLB] Executing Plan: {plan.plan_id} ({len(plan.tasks)} tasks)")
+        logger.info(f"Executing Plan: {plan.plan_id} ({len(plan.tasks)} tasks)")
         start_time = datetime.now()
         
         results = []
@@ -75,7 +78,7 @@ class OLBWorkflow:
             
             if not dl:
                 error = f"No Domain Lead found for domain: {domain}"
-                print(f"[OLB] Error: {error}")
+                logger.error(f"No Domain Lead found for domain: {domain}")
                 failed_tasks.append({
                     "task_id": task.task_id,
                     "error": error,
@@ -85,19 +88,19 @@ class OLBWorkflow:
             
             # Execute task via Domain Lead
             try:
-                print(f"[OLB] Routing task {task.task_id} to {dl.name}")
+                logger.info(f"Routing task {task.task_id} to {dl.name}")
                 result = await dl.execute_task(task, thread)
                 results.append(result)
                 
                 if result["status"] != "Completed":
                     failed_tasks.append(result)
                     # Stop on failure? For now, yes, to prevent cascading errors.
-                    print(f"[OLB] Task {task.task_id} failed. Stopping plan execution.")
+                    logger.warning(f"Task {task.task_id} failed. Stopping plan execution.")
                     break
                     
             except Exception as e:
                 error = f"Error executing task {task.task_id}: {str(e)}"
-                print(f"[OLB] Exception: {error}")
+                logger.error(f"Error executing task {task.task_id}: {str(e)}")
                 failed_tasks.append({
                     "task_id": task.task_id,
                     "error": error,

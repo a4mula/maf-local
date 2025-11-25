@@ -1,6 +1,9 @@
 import asyncio
 from typing import Dict, Any, Callable, List, Optional, Union
+from src.utils import get_logger
 import uuid
+
+logger = get_logger(__name__)
 
 # Type alias for the context
 WorkflowContext = Dict[str, Any]
@@ -75,14 +78,14 @@ class WorkflowGraph:
         if not current_node_name:
             raise ValueError("Workflow has no start node.")
 
-        print(f"[Workflow] Starting execution at '{current_node_name}'")
+        logger.info(f"Starting execution at '{current_node_name}'")
 
         while current_node_name:
             current_node = self.nodes[current_node_name]
             
             # Execute the node
             try:
-                print(f"[Workflow] Executing Node: {current_node_name}")
+                logger.debug(f"Executing Node: {current_node_name}")
                 result = await current_node.execute(context)
                 
                 # Store result in context (convention: result is stored under 'last_result' or specific key)
@@ -93,7 +96,7 @@ class WorkflowGraph:
                 context["_last_result"] = result
                 
             except Exception as e:
-                print(f"[Workflow] Error in node '{current_node_name}': {e}")
+                logger.error(f"Error in node '{current_node_name}': {e}")
                 raise e
 
             # Determine next node
@@ -114,9 +117,9 @@ class WorkflowGraph:
                     break
             
             if next_node_name:
-                print(f"[Workflow] Transitioning: {current_node_name} -> {next_node_name}")
+                logger.debug(f"Transitioning: {current_node_name} -> {next_node_name}")
             else:
-                print(f"[Workflow] End of path reached at '{current_node_name}'")
+                logger.debug(f"End of path reached at '{current_node_name}'")
             
             current_node_name = next_node_name
 

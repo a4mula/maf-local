@@ -8,20 +8,25 @@ from src.api.agent_api import app, set_agent_hierarchy
 from src.config.settings import settings
 import uvicorn
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 # Ensure tools are registered
-import src.tools.code_tools
+# import src.tools.code_tools  <-- REMOVED: Imported via src.tools re-export
 
 def startup():
     """Initialize agent hierarchy before starting the server."""
-    print("[System] Initializing Agent Hierarchy...")
+    logger.info("Startup complete. Server ready.")
+    logger.info(f"Environment: {os.getenv('MAF_ENV', 'development')}")
+    logger.info("Initializing agent hierarchy...")
     hierarchy = AgentFactory.create_hierarchy()
     
     # Inject hierarchy into the API
     set_agent_hierarchy(hierarchy)
     
-    print(f"[System] Agent Hierarchy initialized.")
-    print(f"[System] Active Agents: Liaison, ProjectLead")
-    print(f"[System] Starting API server on http://0.0.0.0:8002")
+    logger.info(f"Active Agents: Liaison, ProjectLead")
+    logger.info(f"Starting API server on http://0.0.0.0:8002")
 
 # Register startup event
 @app.on_event("startup")

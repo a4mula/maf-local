@@ -1,9 +1,12 @@
-.gitignore | 09e80bf3ded72c5abaf9f4484c55161b918dcc3a219c2f3d73af4b7baf9a5e3a | 409 | 2025-11-24 23:49:34
-.pytest_cache/.gitignore | 3ed731b65d06150c138e2dadb0be0697550888a6b47eb8c45ecc9adba8b8e9bd | 37 | 2025-11-21 12:47:03
-.pytest_cache/CACHEDIR.TAG | 37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4 | 191 | 2025-11-21 12:47:03
+Loaded 8 ignore patterns: ['.venv/', '.env', '__pycache__/', '*.log', 'node_modules/', '.git/', '.chainlit/', 'meta/agents/*/working_container/']
+
+✓ Generated /home/robb/projects/maf-local/meta/agents/The_Real_Index.md
+✓ Total files indexed: 301
+✓ File size check: PASS
+3a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4 | 191 | 2025-11-21 12:47:03
 .pytest_cache/README.md | 73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad | 302 | 2025-11-21 12:47:03
-.pytest_cache/v/cache/lastfailed | 44798fb24a1a77ae81fcdbd5c18f9c1183231d0c6e719cabc7ded0eda5f62799 | 9174 | 2025-11-25 08:29:26
-.pytest_cache/v/cache/nodeids | 82f137b419d86713b92db29b687eea6a9b294b52731a8df0d90f092a396ba0f9 | 8458 | 2025-11-25 08:29:26
+.pytest_cache/v/cache/lastfailed | 44798fb24a1a77ae81fcdbd5c18f9c1183231d0c6e719cabc7ded0eda5f62799 | 9174 | 2025-11-25 09:35:12
+.pytest_cache/v/cache/nodeids | 17d551a7ea2a0d47490e0c705c21627f9f7a2c282c2f9c4f87a5018f3211afe7 | 8604 | 2025-11-25 09:35:12
 README.md | cf38c723680575874e38ffd6eaa3e8d36e8ed4cde20c3de69817c6dcf15d0788 | 5988 | 2025-11-24 16:11:55
 config/litellm_config.yaml | 63a6f1631d2c6f578bb84743371c3024941c29caa06b2ab531a5afbb81a26bfc | 1505 | 2025-11-20 14:21:50
 config/prometheus.yml | 4dcb2a0c23e1a6a75b9a4fbe93221a202136f81506272e1e57832a25f911d231 | 321 | 2025-11-20 18:22:19
@@ -23,7 +26,7 @@ docs/00_META/documentor/README.md | c5ed1394dbdecaf8a4de6bcc0d13f828cb41e0104e39
 docs/00_META/documentor/SESSION_HANDOFF.md | c8832f189baf98be781c69a74d5b1a2c5868f3e49061eb83cf137d2516ef23d0 | 9668 | 2025-11-24 07:37:29
 docs/00_META/input/SESSION_TOKEN.md | f5fb0f997c030c51d9a76d1542c5c45b2ef846fe5853c77ee5d883ae986d2566 | 123 | 2025-11-25 08:30:00
 docs/01_ARCHITECTURE/CONCEPTS.md | 71efdcda62229224bd29dfd01b99784ed72aea5c2c47ce626cae78e3d239778e | 10432 | 2025-11-23 07:13:01
-docs/01_ARCHITECTURE/CURRENT.md | 8abb07c71d421e9fa61852338291da00167733d102f642e1b604a856405ac882 | 4339 | 2025-11-25 08:33:06
+docs/01_ARCHITECTURE/CURRENT.md | 4ac44dfcc332660fdad2b7cda7f7cec5e1dd280b5dca10e12732069f4863104a | 4820 | 2025-11-25 09:43:14
 docs/01_ARCHITECTURE/DECISIONS.md | 1013e7e7d5da5b634e500b706eda8edf5ef4143f38a41226a8eec805c441b5a4 | 12017 | 2025-11-22 09:53:50
 docs/01_ARCHITECTURE/IDEAL.md | ef2491545bda0295b24201dbd28c1d9fdee763fb853bb483b8b20b640dd3c587 | 20130 | 2025-11-24 14:58:47
 docs/01_ARCHITECTURE/RESEARCH/INDEX.md | c94afddc64ca8f3e73f154871e91d643185065f34f3dd98bb2e6f0fe0a5f7444 | 3539 | 2025-11-21 09:48:59
@@ -45,36 +48,46 @@ docs/02_PLANNING/implementations/multi_project_devstudio.md | f17e3b95e37915c468
 docs/03_GUIDES/DEPLOYMENT.md | 6c2a48b94a935007b411530f3defc44e29c5751336e603c6cbe688173426ceea | 4934 | 2025-11-22 09:19:59
 docs/03_GUIDES/QUICKSTART.md | a5092fbef203adb128a59cc2ff5bb76be3fde06fdedb717e358075ddfb5116c4 | 6437 | 2025-11-23 06:58:03
 docs/05_API_REFERENCE/README.md | d8c500b100ffac4854bcb333be9fac809b3a142307c4b66dc6935396fc2da07d | 746 | 2025-11-25 08:32:43
-docs/05_API_REFERENCE/modules/agents.md | 6e719446aa0392b02d6d963d1e1c432055405a09ae6e7c0514c5304bdd1194f0 | 1430 | 2025-11-25 08:33:28
+docs/05_API_REFERENCE/modules/agents.md | 9da5c76c71831569f48273277dec8bc8708e05ab70159ebf0e73dd08bec1803e | 1554 | 2025-11-25 09:42:38
 docs/05_API_REFERENCE/modules/models.md | c01abf2cbe05612868ccad89950315dc4921d04933c296a66c890140c70512dc | 910 | 2025-11-25 08:34:30
 docs/05_API_REFERENCE/modules/tools.md | 417ca24933e05c241c70d203a7d5a45a2e16778b28519e085326078d3341dd94 | 634 | 2025-11-25 08:34:21
 docs/05_API_REFERENCE/modules/workflows.md | 6bdda4cba893461d83b777a81263e4f2146685485bde610e2e1311e4bf343dfb | 918 | 2025-11-25 08:34:00
 docs/README.md | cff98c36f0fd245fed83478c472d6b5253d8c8d0e1125face03177588d17921a | 2768 | 2025-11-24 16:09:20
 docs/vision/FUTURE.md | ed20152feaed06fd7daa4138bc083dfdec28c43afc8787bd8649f316f9cb1130 | 9404 | 2025-11-25 02:08:20
 meta/agents/.agentignore | ffeeb9679a9d0119b756b7803c9ae62a807911073bedeeb060d82466810e28a7 | 95 | 2025-11-24 15:16:53
-meta/agents/COMMIT_HISTORY.md | 2321bdd8671c9a8e5989ea269a49fb2fb2b936a5d6fb5a5c89a9a6796c372100 | 1032 | 2025-11-25 01:22:08
+meta/agents/COMMIT_HISTORY.md | a81fb64d93905ef45026db77ff43e3f4e75f181c67f2caaf27c2ae0db27788fc | 2580 | 2025-11-25 08:42:20
 meta/agents/DOCS_DOMAIN_DEF.md | 7e7157e3db0a5aec2e0a2e5a6ff3c40da83e0878d6cda05b08f72306b8e71051 | 236 | 2025-11-24 14:57:21
-meta/agents/DOCS_HISTORY.md | 8888a83fef946ef9c61c0be204045e1257ea29c556e8542f1f31867dabe2e0ff | 1593 | 2025-11-25 01:22:09
-meta/agents/PHASE_HISTORY.md | 53c03d3ef029cc879ce1abbe8eb79fc746ccabb055446e195b01244d7293a111 | 1610 | 2025-11-25 01:21:54
-meta/agents/PROJECT_MANIFEST.md | e6ac9f3fadf1bf91750a8dc1df478258da5918f2d3dc3773c61c06b6b4ff7e9a | 6816 | 2025-11-25 08:29:58
+meta/agents/DOCS_HISTORY.md | 8cc6579533177a001997d6672bbbd59dd74c2f68dff27e55fab332bb934f2389 | 2860 | 2025-11-25 08:42:29
+meta/agents/PHASE_HISTORY.md | 167d62ad72d499f91b5971bcccb18c65b8ee972dab8a132ee35e2f577e08475a | 2758 | 2025-11-25 08:42:31
+meta/agents/PROJECT_MANIFEST.md | b651e17d30abbd2a738dd28fa9f8f294b72fb2b8e56d26021c76c155506d3785 | 9048 | 2025-11-25 09:37:21
 meta/agents/SRC_DOMAIN_DEF.md | d0e75af9ec149e598cc810c7513cd4f38780779a0498b07728d852afc31ea4da | 242 | 2025-11-24 16:10:08
-meta/agents/The_Real_Index.md | 3a9ebffc20d6cdf91e4265460e840e5e503aa2a8a0c10462ed88e336dc5313c0 | 36979 | 2025-11-25 00:39:04
+meta/agents/The_Real_Index.md | e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 | 0 | 2025-11-25 09:43:48
 meta/agents/UPP_DOMAIN_DEF.md | 9c312661867ebeb67cc7c1874e6add9ff874885f8be68ec805ccd1a872ef42b3 | 260 | 2025-11-24 14:56:54
+meta/agents/docs/current_phase.md | e576b51dc63aeb27cdcfe3dae1a7c7fe5af4f058ff44c6c7a07ee3810677cbf4 | 5574 | 2025-11-25 09:07:52
+meta/agents/docs/future_phases.md | 94ffdf43629c7fecce3240c25e10812dec018750dfcf3edb9bed343960eba959 | 6374 | 2025-11-25 09:07:54
 meta/agents/docs/input/SESSION_TOKEN.md | 534a1e9fb7027b677773e1ea2f5e9a1031db91012e1f1369f5eabf33fa92fad4 | 94 | 2025-11-25 00:00:53
-meta/agents/docs/role.md | 3de62aae1066ebe6a9b66c86e54b19963ffa65b9a7f85d0798d5fafc36866953 | 15570 | 2025-11-25 01:23:54
+meta/agents/docs/prior_phases.md | 2b319057f97846ea53abe376a312a0c266dd103e0d5cfbb273f2bc3aa70f7f37 | 5835 | 2025-11-25 09:07:20
+meta/agents/docs/role.md | 9548aeb933f59312e1334872d213e6e70c93a48b6eafb92bbaa5eb182efb48f6 | 17222 | 2025-11-25 09:09:55
 meta/agents/generate_filtered_index.py | 09f799408ee959693ebc6cef2767417bc4387b479f81e53eb9e7a00120added0 | 3278 | 2025-11-24 15:17:31
 meta/agents/generate_index.sh | 97d383dcfc91b3b3ca68bc5d2727e76272c837910283b57ce3930404dacd1233 | 1432 | 2025-11-24 15:11:08
 meta/agents/src/audit_report.md | e503ae766aa461de21cec868953b389f54f6a300bc7067379c664dad1317ea30 | 6011 | 2025-11-25 00:00:25
-meta/agents/src/input/SESSION_TOKEN.md | 3aa93a1ef001fa1e50002713dfb20bfe5b7f7d58a7e07e89ef4c3749bdb474b8 | 145 | 2025-11-25 01:32:45
-meta/agents/src/role.md | 7f3868061993a2265ca867e753d67d954ec44bff660c6acdfdbd1645853c312a | 13321 | 2025-11-25 01:51:14
-meta/agents/upp/input/SESSION_TOKEN.md | da3fb766b10971b0aca1ace1e077af988a446dc0d91178e0627cb5e4d93c836f | 50 | 2025-11-24 16:12:39
-meta/agents/upp/role.md | 6356e75846b43192e900d9b66297fa38152327997ead0fced7de34c8173be8f4 | 15851 | 2025-11-25 01:30:11
+meta/agents/src/current_phase.md | b13e2161d52a8e07a3d16f4a3f3f7729359b90b63113d4ccce447fcb7d34338c | 1291 | 2025-11-25 09:35:43
+meta/agents/src/future_phases.md | 1c5207637b2d9c56758ea0cd5e02bda844e29c109b32c782fcf71978c570ec2c | 7570 | 2025-11-25 09:05:55
+meta/agents/src/input/SESSION_TOKEN.md | c978ccb7acbe67856ce7bd2a8b60492d2121bba7cb2bdd233052f0ddd90dd9df | 111 | 2025-11-25 09:22:18
+meta/agents/src/prior_phases.md | b5bbfb4a5c18ba58b0511ad1fc22abfd9bdeacb867a271d6a59bbb672e9eabce | 6383 | 2025-11-25 09:05:16
+meta/agents/src/role.md | 1dfd53791f695c96eb1bb1b9e1319f73401e947517b5e6fd117ed484215b2434 | 14959 | 2025-11-25 09:09:16
+meta/agents/upp/current_phase.md | 0d801d54bcbb139bb22fda34f9c9e9cd01d94dfc9fb7adef5787de9dbd67d488 | 5664 | 2025-11-25 09:03:39
+meta/agents/upp/future_phases.md | 58c2d4f1ebdf2576d5689680770655392876def4a5c620ba989e89dfbf1c2bc7 | 6603 | 2025-11-25 09:03:42
+meta/agents/upp/input/SESSION_TOKEN.md | e8e5d698cd9355d04fde1b2f9099a4fdabe0427c6c3540562d902cf12f521ba7 | 172 | 2025-11-25 08:57:48
+meta/agents/upp/prior_phases.md | 1fa9acf689d4af802a0d35ebe4f1e5314ba69860c6a0d701be2367258d7129c9 | 5695 | 2025-11-25 09:03:12
+meta/agents/upp/role.md | 51d11adf6a61fb0aa0a8c49f0111fd174dc12bf2f88a899fd1808911975f3c5a | 18597 | 2025-11-25 09:08:39
 requirements.txt | 40b5ef9bbacd3c69591651138cda0a7cbe54d0f5aa6e92f2ea3606dc71e16ab4 | 338 | 2025-11-25 00:31:45
 run_studio.sh | 5b66a079fb7096f0adfe9e9a6558e7bc9a0142fb1e7cd1a59d0db060acc71190 | 1276 | 2025-11-23 06:19:59
 scripts/apply_migrations.py | 294dcc6c0c38df0a7d647453aba83195b8d50eefd76561694132b3991b869a98 | 1291 | 2025-11-20 18:01:40
 scripts/start_node.sh | ca0287523c4947f712c846460352096a2d9bb9e35409da09663e352e26ff6fb9 | 1056 | 2025-11-21 06:40:41
 scripts/verification/mock_mcp_server.py | 208d14564aff2649eec2f94e1d51b808fe3690ca61a6aab495f2c1f64a8e2c69 | 2143 | 2025-11-20 13:04:31
 scripts/verification/verify_a2a.py | 789ebb00f689fe1165cb00433e4a082f1afc6de9e958af3c863ea298539203e7 | 2530 | 2025-11-20 13:00:33
+scripts/verification/verify_maf_compliance.py | 1b0e6a8aae06376f4ee85563155cf87d890c4c38a07be7f91f2ba4c95bebf211 | 7793 | 2025-11-25 09:24:48
 scripts/verification/verify_maf_persistence.py | 0f051494a06727b7aa7a66533a1b5d3e2c2073ad7048d761fac3307cbacd2ae3 | 2563 | 2025-11-20 13:43:36
 scripts/verification/verify_mcp.py | 5c95f51537e22a87f759bf05266db79d2d263a98554da6fb6adeedfe1d6819be | 2664 | 2025-11-20 13:04:59
 scripts/verification/verify_phase2_governance.py | 36f52b11cb37e16c3790f60b2d22251b2c548ffad32c2848a1501d086187f441 | 2220 | 2025-11-20 17:43:47
@@ -105,17 +118,18 @@ src/api/__init__.py | e6bb7dd2138b3a24bb293a1ddbe2233af515044229a385bf606757c9f9
 src/api/agent_api.py | 3a5604ffae16918a177ab530aca2b470e8ad5de0853c62cbf21dd97e25a7bbe4 | 5441 | 2025-11-21 13:20:56
 src/api/routes/projects.py | efc6c55509f2e43fc23da21f2daef76581733a5f95f4a409aa12a82cdcba146f | 1680 | 2025-11-21 13:15:29
 src/api/routes/sessions.py | e2ff6c93cf18b4b26b70fd793f6b728437be78a35c2cfe6bc63e2af33083c4d5 | 2339 | 2025-11-21 13:18:56
-src/api_server.py | 98ac72c4fbe6179fd334d8f81664782b0e3aae58b5da791587165ebab709f839 | 1006 | 2025-11-23 06:19:57
+src/api_server.py | 986d0a6d73066b18431c8eb1caf02742f914cfc1282aa8eca8da1849958786a4 | 1277 | 2025-11-25 09:26:39
 src/clients/base.py | b92b428f0f2f07176c597893a860b53bbfc4f2d57835d967c18dffa6838cc52a | 593 | 2025-11-23 05:49:46
 src/clients/litellm_client.py | 8ec0a6da608a7d9f5cf234ae28bf507e877c144b01f63adfacbcd7b73f5b5777 | 7601 | 2025-11-23 06:11:29
 src/config/settings.py | 1f815a99174d586ad7b1fc07eb9c12f45d8b1926e9d67224fdee39aed6153cc4 | 2188 | 2025-11-19 14:57:51
-src/config/tool_registry.py | d26450c097573aecf59eee97ca53c19b0488a5f59f8cafbac4a560bf4c9ced46 | 4362 | 2025-11-20 13:00:12
+src/config/tool_registry.py | 4079a0e5099146defa28377d53394eceef1cc618cbca84129e191138b86513c8 | 4369 | 2025-11-25 09:17:35
 src/governance/permission_filter.py | a9fe7805e2d90d23375c2c0139244e3f0047f4f4c767292a14fd6125295ea9f1 | 3259 | 2025-11-24 06:12:00
 src/input/SESSION_TOKEN.md | 9e3133a9edeba1259466f9ed6f29062540eb39898d5ebdb7ffe53eb05dc4bcfc | 163 | 2025-11-25 00:13:32
-src/main.py | 1e243f321081a066c2c06f90efc956ccf9f93af572e521291f34e19004df643b | 4341 | 2025-11-21 05:52:29
+src/main.py | d5531449f36806cc981a28c35e09a38a763db1de0433c7a83c5c74c82bd4a0dd | 4390 | 2025-11-25 09:17:27
 src/mcp/client.py | bc39bb9905c78fbef337762ce7e4ff9a431c07516362512187c82a80658ca52c | 2710 | 2025-11-20 13:03:43
 src/middleware/audit_filter.py | e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 | 0 | 2025-11-18 08:59:41
 src/middleware/message_bus.py | 1a4474eb5a6d46f2dceb1064dd4473eda512bc3c75becda7a50127556b26f70f | 2122 | 2025-11-20 12:59:15
+src/middleware/workflow_metrics.py | 70b4e4a1619ef772d45efc93ef69e750863ac4a24f28b49232926bc2d01ebdb1 | 3776 | 2025-11-25 09:24:08
 src/models/data_contracts.py | cc44cb73cc366b9cc67c649d892fbc713dfcbd710c804126a4e87aa3009fc95a | 5149 | 2025-11-24 05:59:09
 src/models/decision.py | cf381649f14a9f89c43b8f83b99cc124986a9dcd326183f2e965dc8922aec64d | 887 | 2025-11-20 17:43:02
 src/persistence/audit_log.py | 81b8d53e4d39ca28fe053a7d36f8cf4b38d2b011d5f8958e1d25d8142b40ac4a | 3418 | 2025-11-20 18:10:22
@@ -158,6 +172,7 @@ src/workflows/research_workflow.py | c9d77d7b3d503d5174a12cde6a9ec80a9fa606be70d
 src/workflows/tlb_workflow.py | 27b5991619b48bbe349fc0c8cd09de06761969eaad41d5f2cb12851bbd966aa1 | 4925 | 2025-11-24 06:41:24
 tests/integration/test_context_retrieval_agent.py | dd010f7b17d24ac405b50ad54e2347ece4043fa766d5bf0c9c43cf102de69cd0 | 3939 | 2025-11-21 10:17:52
 tests/integration/test_domain_lead_integration.py | b733816145e6d83f2d11457bc5718786b921dc539592a90ac5dbaae309fcf1c1 | 3067 | 2025-11-24 06:51:36
+tests/integration/test_e2e_workflows.py | a25844653bfce6c9ae9bb5a1aef150011da106ec69c42a1558c6255d8e0b871c | 5718 | 2025-11-25 09:35:09
 tests/integration/test_factory_startup.py | 148f27a3ea156b344024b372bc721cc3ba78b331a488cb5d7f68d882d7cbb82b | 802 | 2025-11-23 05:57:09
 tests/integration/test_file_generation_flow.py | d49212b0d3b6df6607b254aed03965ee861739dbc0d83c39b12f8c4ab64e28b2 | 1474 | 2025-11-23 06:12:48
 tests/integration/test_full_hierarchy.py | bfa79b0fd2afaeaf03cd2c5d051d48a90318701d825f7d3de12c92131e1b0874 | 3380 | 2025-11-24 07:20:03

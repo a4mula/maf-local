@@ -1,5 +1,8 @@
 from agent_framework import ChatAgent
 from src.agents.project_lead_agent import ProjectLeadAgent
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 class LiaisonAgent:
     """
@@ -11,7 +14,7 @@ class LiaisonAgent:
     def __init__(self, project_lead: ProjectLeadAgent, chat_client):
         self.project_lead = project_lead
         
-        print("DEBUG: LiaisonAgent initializing...")
+        logger.debug("LiaisonAgent initializing...")
         
         # Dynamic Project Context Loading
         context = ""
@@ -21,7 +24,7 @@ class LiaisonAgent:
             import os
             
             if os.path.exists(project_root):
-                print(f"DEBUG: Scanning project root at {project_root}")
+                logger.debug(f"Scanning project root at {project_root}")
                 
                 # 1. Generate File Tree (max depth 2 to avoid noise)
                 tree_str = "Project Structure:\n"
@@ -44,21 +47,21 @@ class LiaisonAgent:
                 # 2. Load README.md if it exists
                 readme_path = os.path.join(project_root, "README.md")
                 if os.path.exists(readme_path):
-                    print("DEBUG: Found README.md")
+                    logger.debug("Found README.md")
                     with open(readme_path, "r") as f:
                         context += f"\n\nProject README:\n{f.read()}"
                 else:
-                    print("DEBUG: No README.md found in project root")
+                    logger.debug("No README.md found in project root")
                     
             else:
-                print(f"DEBUG: Project root not found at {project_root}")
+                logger.warning(f"Project root not found at {project_root}")
                 
         except Exception as e:
-            print(f"Warning: Could not load project context: {e}")
+            logger.warning(f"Could not load project context: {e}")
             import traceback
             traceback.print_exc()
 
-        print(f"DEBUG: Context length: {len(context)}")
+        logger.debug(f"Context length: {len(context)}")
         self.context = context
         
         self.sdk_agent = ChatAgent(
@@ -94,7 +97,7 @@ class LiaisonAgent:
             
             classification = await self.sdk_agent.run(classification_prompt, thread=temp_thread)
             intent = str(classification).strip().upper()
-            print(f"DEBUG: User intent classified as: {intent}")
+            logger.debug(f"User intent classified as: {intent}")
             
             if "IDEA" in intent:
                 # Forward to Project Lead

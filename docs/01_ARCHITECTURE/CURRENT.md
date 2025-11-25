@@ -57,7 +57,11 @@ Tier 4: Execution (Atomic)
 - **Authorized File Writers:** Only `ProjectLeadAgent` and `DocumentationAgent` can write to disk.
 - **Sandboxed Tools:** `write_file` and `execute_code` have strict path validation.
 
-### 4. Tool System
+### 4. Observability & Compliance (Phase 3)
+- **Workflow Metrics:** Prometheus middleware (`src/middleware/workflow_metrics.py`) tracks duration, execution counts, and error rates.
+- **Compliance Checker:** Static analysis tool (`scripts/verification/verify_maf_compliance.py`) enforces architectural boundaries and MAF patterns.
+
+### 5. Tool System
 
 **Status:** ✅ Pure MAF Compliance (Refactored Nov 24, 2025)
 
@@ -83,7 +87,10 @@ maf-local/
 │   ├── tools/tier4/          # Tier 4: Executor tools (code_tools, database_tool_provider)
 │   ├── models/               # Pydantic data contracts
 │   ├── governance/           # PermissionFilter
+│   ├── middleware/           # Observability & Metrics
 │   └── ...
+├── scripts/
+│   └── verification/         # Compliance & Audit scripts
 ├── docs/                     # Documentation
 └── tests/                    # Unit and Integration tests
 ```

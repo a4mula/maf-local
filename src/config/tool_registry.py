@@ -28,7 +28,7 @@ TOOL_REGISTRY: Dict[str, List[ToolSchema]] = {
                 },
                 "required": ["code"]
             },
-            module_path='src.tools.code_tools'
+            module_path='src.tools.tier4.code_tools',
         ),
         ToolSchema(
             function_name="query_agent_messages",

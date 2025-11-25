@@ -1,5 +1,8 @@
 from agent_framework import ChatAgent
 from agent_framework._clients import ChatClientProtocol
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 class DocumentationAgent(ChatAgent):
     """
@@ -73,7 +76,7 @@ FileWriter Approval Process:
         Returns:
             Relevant context from knowledge base (docs, bugs, design decisions)
         """
-        print(f"[DocumentationAgent] Context query received: {query}")
+        logger.info(f"Context query received: {query}")
         
         # Use inherited ChatAgent.run() to process query
         from agent_framework import AgentThread
@@ -82,7 +85,7 @@ FileWriter Approval Process:
         response = await self.run(query, thread=thread)
         response_text = response.text if hasattr(response, 'text') else str(response)
         
-        print(f"[DocumentationAgent] Context provided: {response_text[:100]}...")
+        logger.info(f"Context provided: {response_text[:100]}...")
         return response_text
     
     async def approve_file_write(self, requesting_agent: str, file_path: str, reason: str) -> dict:
@@ -98,7 +101,7 @@ FileWriter Approval Process:
         Returns:
             dict with 'approved' (bool) and 'reason' (str) keys
         """
-        print(f"[DocumentationAgent] FileWrite approval request from {requesting_agent}: {file_path}")
+
         
         # For Phase 1: Auto-approve requests from ProjectLead
         # In Phase 2: Use LLM to evaluate request against project policies
@@ -117,5 +120,5 @@ FileWriter Approval Process:
                 "approval_token": None
             }
         
-        print(f"[DocumentationAgent] Approval decision: {approval['approved']} - {approval['reason']}")
+        logger.info(f"Approval decision: {approval['approved']} - {approval['reason']}")
         return approval

@@ -2,9 +2,12 @@ from agent_framework import ChatAgent, ai_function, AgentThread
 from src.tools import ALL_TOOLS
 from src.workflows.olb_workflow import OLBWorkflow
 from src.models.data_contracts import StrategicPlan, TaskDefinition
+from src.utils import get_logger
 from typing import List, Optional
 import os
 import uuid
+
+logger = get_logger(__name__)
 
 class ProjectLeadAgent(ChatAgent):
     """
@@ -29,7 +32,7 @@ class ProjectLeadAgent(ChatAgent):
                         content = f.read()
                         context += f"\n\n# {os.path.basename(path)}\n{content}"
             except Exception as e:
-                print(f"Warning: Could not load {path}: {e}")
+                logger.warning(f"Could not load {path}: {e}")
         
         # Alternative: Try relative paths
         if not context:
@@ -45,7 +48,7 @@ class ProjectLeadAgent(ChatAgent):
                             content = f.read()
                             context += f"\n\n# {os.path.basename(path)}\n{content}"
                 except Exception as e:
-                    print(f"Warning: Could not load project context: {e}")
+                    logger.warning(f"Could not load project context: {e}")
 
         self.olb_workflow = olb_workflow
 
@@ -88,7 +91,7 @@ class ProjectLeadAgent(ChatAgent):
                 context=plan_context
             )
 
-            print(f"[ProjectLead] Submitting plan {plan.plan_id} to OLB...")
+            logger.info(f"Submitting plan {plan.plan_id} to OLB...")
             
             # Execute via OLB
             # We need a thread for the workflow. We can reuse the current one if passed,
@@ -126,12 +129,12 @@ Current Project Context:{context}""",
 
     async def receive_idea(self, idea: str):
         """Process user idea and return strategic plan execution result."""
-        print(f"[ProjectLead] Received idea: {idea}")
+        logger.info(f"Received idea: {idea}")
         
         thread = AgentThread()
         response = await self.run(idea, thread=thread)
         response_text = response.text if hasattr(response, 'text') else str(response)
 
-        print(f"[ProjectLead] Finished processing: {idea[:50]}...")
+        logger.info(f"Finished processing: {idea[:50]}...")
         
         return f"**Project Lead Execution Report:**\n\n{response_text}"

@@ -155,7 +155,17 @@ ALL_UTILITY_TOOLS = [
     clear_context
 ]
 
-# Combined exports from all tool modules
-from src.tools.code_tools import ALL_CODE_TOOLS
+# Combined exports from tier-organized tool modules
+try:
+    from src.tools.tier4 import ALL_TIER4_TOOLS
+    from src.tools.tier2 import ALL_TIER2_TOOLS
+    
+    # For backward compatibility, expose ALL_CODE_TOOLS
+    from src.tools.tier4.code_tools import ALL_CODE_TOOLS
+    
+    ALL_TOOLS = ALL_TIER4_TOOLS + ALL_TIER2_TOOLS + ALL_UTILITY_TOOLS
+except ImportError as e:
+    # Fallback if tier imports fail
+    ALL_CODE_TOOLS = []
+    ALL_TOOLS = ALL_UTILITY_TOOLS
 
-ALL_TOOLS = ALL_CODE_TOOLS + ALL_UTILITY_TOOLS

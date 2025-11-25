@@ -12,7 +12,7 @@ from src.config.settings import settings
 from src.services.agent_factory import AgentFactory
 
 # Ensure tools are registered
-import src.tools.code_tools 
+# import src.tools.code_tools  <-- REMOVED: Imported via src.tools re-export 
 
 console = Console()
 

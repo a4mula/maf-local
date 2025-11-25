@@ -8,8 +8,11 @@ Bridges the gap between Project Lead (Strategy) and Executors (Execution).
 from agent_framework import ChatAgent, AgentThread
 from src.models.data_contracts import TaskDefinition, ExecutorReport
 from src.workflows.tlb_workflow import TLBWorkflow
+from src.utils import get_logger
 from typing import List, Dict, Any, Optional
 import json
+
+logger = get_logger(__name__)
 
 
 class BaseDomainLead(ChatAgent):
@@ -82,11 +85,11 @@ You do NOT write code yourself. You delegate to Executors.
         Returns:
             Summary of execution results
         """
-        print(f"[{self.name}] Received task: {task_def.description}")
+        logger.info(f"[{self.name}] Received task: {task_def.description}")
         
         # 1. Break down task into subtasks
         subtasks = await self._break_down_task(task_def, thread)
-        print(f"[{self.name}] Generated {len(subtasks)} subtasks")
+        logger.info(f"[{self.name}] Generated {len(subtasks)} subtasks")
         
         # 2. Execute subtasks via TLB
         tlb_result = await self.tlb_workflow.execute_tasks(subtasks, thread)
@@ -154,7 +157,7 @@ You do NOT write code yourself. You delegate to Executors.
                     raise ValueError("Invalid subtask structure")
             return subtasks
         except Exception as e:
-            print(f"[{self.name}] Error parsing subtasks: {e}")
+            logger.error(f"[{self.name}] Error parsing subtasks: {e}")
             # Fallback: Create one generic subtask
             return [{
                 "description": f"Implement: {task_def.description}",

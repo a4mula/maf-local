@@ -1,3 +1,3 @@
-status: READY_FOR_IMPLEMENTATION
-plan_id: TECH-DEBT-001
-objective: Pay down technical debt (dependencies, logging, tools, tests)
+status: IDLE
+last_plan: TECH-DEBT-001
+note: Token cleared by SRC agent during Phase 3 startup due to staleness

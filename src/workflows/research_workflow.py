@@ -1,5 +1,8 @@
 from src.workflows.main_orchestrator import WorkflowGraph, WorkflowContext
 from src.agents.core_agent import CoreAgent
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 def build_research_workflow(agent: CoreAgent) -> WorkflowGraph:
     """
@@ -12,7 +15,7 @@ def build_research_workflow(agent: CoreAgent) -> WorkflowGraph:
     
     async def research_step(context: WorkflowContext) -> dict:
         topic = context.get("topic")
-        print(f"\n[Workflow] Step 1: Researching '{topic}'...")
+        logger.info(f"Step 1: Researching '{topic}'...")
         
         prompt = f"Please research the following topic and provide key facts: {topic}"
         response = await agent.process(prompt)
@@ -21,7 +24,7 @@ def build_research_workflow(agent: CoreAgent) -> WorkflowGraph:
 
     async def summarize_step(context: WorkflowContext) -> dict:
         research_output = context.get("research_output")
-        print(f"\n[Workflow] Step 2: Summarizing findings...")
+        logger.info(f"Step 2: Summarizing findings...")
         
         prompt = f"Here is some research data:\n{research_output}\n\nPlease provide a concise summary of this information."
         response = await agent.process(prompt)
