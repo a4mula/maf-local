@@ -230,7 +230,20 @@ Before executing ANY plan, validate:
     - Include this list in CodeCommitReport under **Files Changed**
     - Verify no unexpected files staged (e.g., `.env`, `__pycache__/`, `.log`)
 
-12. **Update PROJECT_MANIFEST.md**
+12. **API Reference Audit (MANDATORY)**
+    - **Purpose:** Ensure DOCS agent has accurate feedback on documentation gaps
+    - **Process:**
+      1. Review `docs/05_API_REFERENCE/modules/` against changed code
+      2. Check for:
+         - Missing agents/executors/tools from recent implementations
+         - Outdated API signatures or method descriptions
+         - Incorrect data contract schemas
+         - Missing code examples
+      3. Document findings in `CodeCommitReport` under **Documentation Feedback for DOCS**
+    - **Output:** Structured feedback with CRITICAL/HIGH/MEDIUM/LOW priority tags
+    - **Benefit:** DOCS receives precise, actionable documentation updates
+
+13. **Update PROJECT_MANIFEST.md**
     - Add `CodeCommitReport` to `# Implementation.Feedback`
     - Include:
       ```
@@ -248,14 +261,24 @@ Before executing ANY plan, validate:
       - Compliance check results
       
       **Documentation Feedback for DOCS:**
-      - API changes requiring documentation
+      **API Reference Updates Required:**
+      - [FILE] Path to file
+        - CRITICAL/HIGH/MEDIUM/LOW: Specific issue and fix
+      
+      **Accuracy Issues Identified:**
+      - [FILE] Path to file
+        - INCORRECT: What is wrong and what it should be
+      
+      **Enhancement Suggestions:**
+      - [FILE] Path to file
+        - MISSING: What should be added (examples, cross-refs, etc.)
       ```
 
-13. **Trigger DOCS Handoff**
+14. **Trigger DOCS Handoff**
     - Create `docs/00_META/input/SESSION_TOKEN.md`
     - Content: `status: CODE_COMPLETE, plan_id: [ID], staged: true`
 
-14. **Close Session**
+15. **Close Session**
     - Output `HANDOFF COMPLETE - CHANGES STAGED FOR REVIEW`
     - Terminate execution
     - DOCS will audit staged changes and commit if approved

@@ -71,6 +71,19 @@ class ExecutorReport(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata (logs, metrics, etc.)")
 
 
+class TaskMetadata(BaseModel):
+    """Metadata for task tracking.
+    
+    Provides standard fields for tracking task lifecycle and context.
+    """
+    created_at: str = Field(..., description="ISO timestamp of creation")
+    updated_at: str = Field(..., description="ISO timestamp of last update")
+    priority: Literal["low", "medium", "high", "critical"] = Field("medium", description="Task priority")
+    tags: List[str] = Field(default_factory=list, description="Tags for categorization")
+    source: Optional[str] = Field(None, description="Source of the task (e.g., 'user', 'system')")
+
+
+
 # Example usage (for documentation):
 if __name__ == "__main__":
     # ProjectLeadAgent creates a StrategicPlan

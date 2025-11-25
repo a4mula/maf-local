@@ -107,13 +107,15 @@ You do NOT write code yourself. You delegate to Executors.
     async def _break_down_task(
         self, 
         task_def: TaskDefinition, 
-        thread: AgentThread
+        thread: AgentThread,
+        max_retries: int = 3
     ) -> List[Dict[str, Any]]:
         """Use LLM to break down high-level task into executor subtasks.
         
         Args:
             task_def: The high-level task
             thread: MAF AgentThread
+            max_retries: Number of retries for JSON parsing failures
             
         Returns:
             List of subtask dictionaries for TLB
@@ -143,24 +145,33 @@ You do NOT write code yourself. You delegate to Executors.
         RETURN ONLY JSON. NO MARKDOWN.
         """
         
-        try:
-            response = await self.run(prompt, thread=thread)
-            response_text = response.text if hasattr(response, 'text') else str(response)
-            
-            # Clean up response (remove markdown code blocks if present)
-            cleaned_text = response_text.replace("```json", "").replace("```", "").strip()
-            
-            subtasks = json.loads(cleaned_text)
-            # Validate structure
-            for task in subtasks:
-                if "description" not in task or "executor_type" not in task:
-                    raise ValueError("Invalid subtask structure")
-            return subtasks
-        except Exception as e:
-            logger.error(f"[{self.name}] Error parsing subtasks: {e}")
-            # Fallback: Create one generic subtask
-            return [{
-                "description": f"Implement: {task_def.description}",
-                "executor_type": "coder",
-                "task_id": f"{task_def.task_id}_fallback"
-            }]
+        last_error = None
+        
+        for attempt in range(max_retries):
+            try:
+                response = await self.run(prompt, thread=thread)
+                response_text = response.text if hasattr(response, 'text') else str(response)
+                
+                # Clean up response (remove markdown code blocks if present)
+                cleaned_text = response_text.replace("```json", "").replace("```", "").strip()
+                
+                subtasks = json.loads(cleaned_text)
+                # Validate structure
+                for task in subtasks:
+                    if "description" not in task or "executor_type" not in task:
+                        raise ValueError("Invalid subtask structure")
+                return subtasks
+                
+            except Exception as e:
+                logger.warning(f"[{self.name}] Attempt {attempt + 1}/{max_retries} failed: {e}")
+                last_error = e
+                # Add error context to prompt for next retry
+                prompt += f"\n\nPREVIOUS ATTEMPT FAILED: {str(e)}. PLEASE FIX JSON FORMAT."
+
+        logger.error(f"[{self.name}] All {max_retries} attempts failed. Error: {last_error}")
+        # Fallback: Create one generic subtask
+        return [{
+            "description": f"Implement: {task_def.description}",
+            "executor_type": "coder",
+            "task_id": f"{task_def.task_id}_fallback"
+        }]

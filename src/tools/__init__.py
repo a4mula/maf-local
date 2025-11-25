@@ -159,11 +159,12 @@ ALL_UTILITY_TOOLS = [
 try:
     from src.tools.tier4 import ALL_TIER4_TOOLS
     from src.tools.tier2 import ALL_TIER2_TOOLS
+    from src.tools.tier2.validation_tool import ValidationTool
     
     # For backward compatibility, expose ALL_CODE_TOOLS
     from src.tools.tier4.code_tools import ALL_CODE_TOOLS
     
-    ALL_TOOLS = ALL_TIER4_TOOLS + ALL_TIER2_TOOLS + ALL_UTILITY_TOOLS
+    ALL_TOOLS = ALL_TIER4_TOOLS + ALL_TIER2_TOOLS + ALL_UTILITY_TOOLS + [ValidationTool]
 except ImportError as e:
     # Fallback if tier imports fail
     ALL_CODE_TOOLS = []

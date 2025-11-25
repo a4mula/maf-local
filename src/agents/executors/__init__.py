@@ -9,10 +9,12 @@ from src.agents.executors.base_executor import BaseExecutor
 from src.agents.executors.coder_executor import CoderExecutor
 from src.agents.executors.tester_executor import TesterExecutor
 from src.agents.executors.writer_executor import WriterExecutor
+from src.agents.executors.research_executor import ResearchExecutor
 
 __all__ = [
     "BaseExecutor",
     "CoderExecutor",
     "TesterExecutor",
-    "WriterExecutor"
+    "WriterExecutor",
+    "ResearchExecutor"
 ]
