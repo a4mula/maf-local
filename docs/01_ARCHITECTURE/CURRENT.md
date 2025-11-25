@@ -79,6 +79,8 @@ maf-local/
 │   │   └── liaison_agent.py
 │   ├── workflows/            # OLB and TLB implementations
 │   ├── tools/                # MAF @ai_function tools
+│   ├── tools/tier2/          # Tier 2: Strategic tools (e.g., search, add_context)
+│   ├── tools/tier4/          # Tier 4: Executor tools (code_tools, database_tool_provider)
 │   ├── models/               # Pydantic data contracts
 │   ├── governance/           # PermissionFilter
 │   └── ...

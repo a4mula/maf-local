@@ -1,12 +1,9 @@
-Loaded 8 ignore patterns: ['.venv/', '.env', '__pycache__/', '*.log', 'node_modules/', '.git/', '.chainlit/', 'meta/agents/*/working_container/']
-
-✓ Generated /home/robb/projects/maf-local/meta/agents/The_Real_Index.md
-✓ Total files indexed: 277
-✓ File size check: PASS
-3a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4 | 191 | 2025-11-21 12:47:03
+.gitignore | 09e80bf3ded72c5abaf9f4484c55161b918dcc3a219c2f3d73af4b7baf9a5e3a | 409 | 2025-11-24 23:49:34
+.pytest_cache/.gitignore | 3ed731b65d06150c138e2dadb0be0697550888a6b47eb8c45ecc9adba8b8e9bd | 37 | 2025-11-21 12:47:03
+.pytest_cache/CACHEDIR.TAG | 37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4 | 191 | 2025-11-21 12:47:03
 .pytest_cache/README.md | 73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad | 302 | 2025-11-21 12:47:03
-.pytest_cache/v/cache/lastfailed | 89a7ce859d4e39630a969911ccebc1c2c8a677d6b26b34b35886bd5152c70526 | 5206 | 2025-11-25 00:32:49
-.pytest_cache/v/cache/nodeids | 49cce32aa27469fdcc5d53d9fce4a16bc194798d069bec0a97bc2b64cc5b412c | 7995 | 2025-11-25 00:32:41
+.pytest_cache/v/cache/lastfailed | 44798fb24a1a77ae81fcdbd5c18f9c1183231d0c6e719cabc7ded0eda5f62799 | 9174 | 2025-11-25 08:29:26
+.pytest_cache/v/cache/nodeids | 82f137b419d86713b92db29b687eea6a9b294b52731a8df0d90f092a396ba0f9 | 8458 | 2025-11-25 08:29:26
 README.md | cf38c723680575874e38ffd6eaa3e8d36e8ed4cde20c3de69817c6dcf15d0788 | 5988 | 2025-11-24 16:11:55
 config/litellm_config.yaml | 63a6f1631d2c6f578bb84743371c3024941c29caa06b2ab531a5afbb81a26bfc | 1505 | 2025-11-20 14:21:50
 config/prometheus.yml | 4dcb2a0c23e1a6a75b9a4fbe93221a202136f81506272e1e57832a25f911d231 | 321 | 2025-11-20 18:22:19
@@ -24,9 +21,9 @@ docs/00_META/PHILOSOPHY.md | 13d75f0f0735cf3bf25d69a27cf2c697b20a4d6f31e5e31eeba
 docs/00_META/WORKFLOW.md | 28f28a21f0cb7d84d3c6291d9047b23e5b0cecf2d140f256726a4f8e19f720dd | 7239 | 2025-11-22 09:22:25
 docs/00_META/documentor/README.md | c5ed1394dbdecaf8a4de6bcc0d13f828cb41e0104e394a59c59ffebd8293983b | 703 | 2025-11-24 07:35:48
 docs/00_META/documentor/SESSION_HANDOFF.md | c8832f189baf98be781c69a74d5b1a2c5868f3e49061eb83cf137d2516ef23d0 | 9668 | 2025-11-24 07:37:29
-docs/00_META/input/SESSION_TOKEN.md | 2905d25ab5a529fdc5e4260577557bcf4bb334e3af03893790f9ae9ad45b0c6b | 1966 | 2025-11-25 00:36:59
+docs/00_META/input/SESSION_TOKEN.md | f5fb0f997c030c51d9a76d1542c5c45b2ef846fe5853c77ee5d883ae986d2566 | 123 | 2025-11-25 08:30:00
 docs/01_ARCHITECTURE/CONCEPTS.md | 71efdcda62229224bd29dfd01b99784ed72aea5c2c47ce626cae78e3d239778e | 10432 | 2025-11-23 07:13:01
-docs/01_ARCHITECTURE/CURRENT.md | 03d2b0313df538b85248a1ff983c5ec0dc86c2a87fdff3358327881714aeaa12 | 4147 | 2025-11-25 00:38:48
+docs/01_ARCHITECTURE/CURRENT.md | 8abb07c71d421e9fa61852338291da00167733d102f642e1b604a856405ac882 | 4339 | 2025-11-25 08:33:06
 docs/01_ARCHITECTURE/DECISIONS.md | 1013e7e7d5da5b634e500b706eda8edf5ef4143f38a41226a8eec805c441b5a4 | 12017 | 2025-11-22 09:53:50
 docs/01_ARCHITECTURE/IDEAL.md | ef2491545bda0295b24201dbd28c1d9fdee763fb853bb483b8b20b640dd3c587 | 20130 | 2025-11-24 14:58:47
 docs/01_ARCHITECTURE/RESEARCH/INDEX.md | c94afddc64ca8f3e73f154871e91d643185065f34f3dd98bb2e6f0fe0a5f7444 | 3539 | 2025-11-21 09:48:59
@@ -47,22 +44,31 @@ docs/02_PLANNING/implementations/maf_sdk_compliance_implementation.md | 69cbac4a
 docs/02_PLANNING/implementations/multi_project_devstudio.md | f17e3b95e37915c468868c8eaf2f75ce58491e8b6cb6b5ade0129967832b4695 | 20301 | 2025-11-21 10:36:12
 docs/03_GUIDES/DEPLOYMENT.md | 6c2a48b94a935007b411530f3defc44e29c5751336e603c6cbe688173426ceea | 4934 | 2025-11-22 09:19:59
 docs/03_GUIDES/QUICKSTART.md | a5092fbef203adb128a59cc2ff5bb76be3fde06fdedb717e358075ddfb5116c4 | 6437 | 2025-11-23 06:58:03
+docs/05_API_REFERENCE/README.md | d8c500b100ffac4854bcb333be9fac809b3a142307c4b66dc6935396fc2da07d | 746 | 2025-11-25 08:32:43
+docs/05_API_REFERENCE/modules/agents.md | 6e719446aa0392b02d6d963d1e1c432055405a09ae6e7c0514c5304bdd1194f0 | 1430 | 2025-11-25 08:33:28
+docs/05_API_REFERENCE/modules/models.md | c01abf2cbe05612868ccad89950315dc4921d04933c296a66c890140c70512dc | 910 | 2025-11-25 08:34:30
+docs/05_API_REFERENCE/modules/tools.md | 417ca24933e05c241c70d203a7d5a45a2e16778b28519e085326078d3341dd94 | 634 | 2025-11-25 08:34:21
+docs/05_API_REFERENCE/modules/workflows.md | 6bdda4cba893461d83b777a81263e4f2146685485bde610e2e1311e4bf343dfb | 918 | 2025-11-25 08:34:00
 docs/README.md | cff98c36f0fd245fed83478c472d6b5253d8c8d0e1125face03177588d17921a | 2768 | 2025-11-24 16:09:20
+docs/vision/FUTURE.md | ed20152feaed06fd7daa4138bc083dfdec28c43afc8787bd8649f316f9cb1130 | 9404 | 2025-11-25 02:08:20
 meta/agents/.agentignore | ffeeb9679a9d0119b756b7803c9ae62a807911073bedeeb060d82466810e28a7 | 95 | 2025-11-24 15:16:53
+meta/agents/COMMIT_HISTORY.md | 2321bdd8671c9a8e5989ea269a49fb2fb2b936a5d6fb5a5c89a9a6796c372100 | 1032 | 2025-11-25 01:22:08
 meta/agents/DOCS_DOMAIN_DEF.md | 7e7157e3db0a5aec2e0a2e5a6ff3c40da83e0878d6cda05b08f72306b8e71051 | 236 | 2025-11-24 14:57:21
-meta/agents/PROJECT_MANIFEST.md | 4e69f607924a2bdd8ba1625ba7800454aced109b6d36e85d8c8084c566a4dd1d | 10953 | 2025-11-25 00:33:16
+meta/agents/DOCS_HISTORY.md | 8888a83fef946ef9c61c0be204045e1257ea29c556e8542f1f31867dabe2e0ff | 1593 | 2025-11-25 01:22:09
+meta/agents/PHASE_HISTORY.md | 53c03d3ef029cc879ce1abbe8eb79fc746ccabb055446e195b01244d7293a111 | 1610 | 2025-11-25 01:21:54
+meta/agents/PROJECT_MANIFEST.md | e6ac9f3fadf1bf91750a8dc1df478258da5918f2d3dc3773c61c06b6b4ff7e9a | 6816 | 2025-11-25 08:29:58
 meta/agents/SRC_DOMAIN_DEF.md | d0e75af9ec149e598cc810c7513cd4f38780779a0498b07728d852afc31ea4da | 242 | 2025-11-24 16:10:08
-meta/agents/The_Real_Index.md | e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 | 0 | 2025-11-25 00:39:04
+meta/agents/The_Real_Index.md | 3a9ebffc20d6cdf91e4265460e840e5e503aa2a8a0c10462ed88e336dc5313c0 | 36979 | 2025-11-25 00:39:04
 meta/agents/UPP_DOMAIN_DEF.md | 9c312661867ebeb67cc7c1874e6add9ff874885f8be68ec805ccd1a872ef42b3 | 260 | 2025-11-24 14:56:54
 meta/agents/docs/input/SESSION_TOKEN.md | 534a1e9fb7027b677773e1ea2f5e9a1031db91012e1f1369f5eabf33fa92fad4 | 94 | 2025-11-25 00:00:53
-meta/agents/docs/role.md | ce0b545c603f35fd9f30e72ade1950220012fd491758442b5bb838315b781e29 | 14193 | 2025-11-25 00:26:41
+meta/agents/docs/role.md | 3de62aae1066ebe6a9b66c86e54b19963ffa65b9a7f85d0798d5fafc36866953 | 15570 | 2025-11-25 01:23:54
 meta/agents/generate_filtered_index.py | 09f799408ee959693ebc6cef2767417bc4387b479f81e53eb9e7a00120added0 | 3278 | 2025-11-24 15:17:31
 meta/agents/generate_index.sh | 97d383dcfc91b3b3ca68bc5d2727e76272c837910283b57ce3930404dacd1233 | 1432 | 2025-11-24 15:11:08
 meta/agents/src/audit_report.md | e503ae766aa461de21cec868953b389f54f6a300bc7067379c664dad1317ea30 | 6011 | 2025-11-25 00:00:25
-meta/agents/src/input/SESSION_TOKEN.md | 22f0d3f310c45fa743c9000cf0665c9ef90a34c0f8246b3f18cef61ef6236549 | 129 | 2025-11-25 00:31:14
-meta/agents/src/role.md | 4a863e5489623b7a3c2c3ec94e8c7e6bb2bac02d7b36d102e2b53e6d1a346f70 | 12583 | 2025-11-25 00:26:39
+meta/agents/src/input/SESSION_TOKEN.md | 3aa93a1ef001fa1e50002713dfb20bfe5b7f7d58a7e07e89ef4c3749bdb474b8 | 145 | 2025-11-25 01:32:45
+meta/agents/src/role.md | 7f3868061993a2265ca867e753d67d954ec44bff660c6acdfdbd1645853c312a | 13321 | 2025-11-25 01:51:14
 meta/agents/upp/input/SESSION_TOKEN.md | da3fb766b10971b0aca1ace1e077af988a446dc0d91178e0627cb5e4d93c836f | 50 | 2025-11-24 16:12:39
-meta/agents/upp/role.md | d1c0d1c20686eaef955261bec509a90cc386681df5e265ed1b5f896213012947 | 10960 | 2025-11-25 00:19:02
+meta/agents/upp/role.md | 6356e75846b43192e900d9b66297fa38152327997ead0fced7de34c8173be8f4 | 15851 | 2025-11-25 01:30:11
 requirements.txt | 40b5ef9bbacd3c69591651138cda0a7cbe54d0f5aa6e92f2ea3606dc71e16ab4 | 338 | 2025-11-25 00:31:45
 run_studio.sh | 5b66a079fb7096f0adfe9e9a6558e7bc9a0142fb1e7cd1a59d0db060acc71190 | 1276 | 2025-11-23 06:19:59
 scripts/apply_migrations.py | 294dcc6c0c38df0a7d647453aba83195b8d50eefd76561694132b3991b869a98 | 1291 | 2025-11-20 18:01:40
@@ -83,9 +89,9 @@ scripts/verification/verify_search.py | 79450b9c0923dfaaacc2474d8f223baa6b1cadbf
 src/adapters/maf_adapter.py | 39fa2e59c4fc1b5d967e19f9fe34b35c27b7c1b0a6d0c8b640b36a874dcdb633 | 7623 | 2025-11-24 06:31:01
 src/adapters/ollama_sdk_client.py | bde94197766a43bac88304b436af64fee00b9310d6cd196ad31c8429f3d36fae | 2645 | 2025-11-20 13:15:12
 src/agents/__init__.py | ae66b5dc8e32f5192f02b6907329034d3084ea89cad81ab9138c52e530d03ed1 | 147 | 2025-11-23 06:10:57
-src/agents/documentation_agent.py | adf9fb31774c7268185f092d3a3e9b252c8b2615c318d11efde4a7da74506102 | 5363 | 2025-11-24 05:58:31
+src/agents/documentation_agent.py | 67aa4941817a8c8917c74378054e3a48c13ad42b19f3364615eadba76b8e0d96 | 5280 | 2025-11-25 08:25:47
 src/agents/domain_leads/__init__.py | 5c9d4abfb48ec25e6b27eddabfb74472b8bae93f7fd8c1729da3fd8af07b0ca2 | 385 | 2025-11-24 15:36:48
-src/agents/domain_leads/base_domain_lead.py | 93721e602e69fff168aa38dd209bc3947165a4e7b4bb2186fd914991c590a6bd | 5812 | 2025-11-24 06:50:01
+src/agents/domain_leads/base_domain_lead.py | ab510b6da65ce4fec0e9582c265ef9272db547b14a5107c8c9da2cd216cfc3ac | 5895 | 2025-11-25 08:25:49
 src/agents/domain_leads/dev_domain_lead.py | d9e891265842b70401fe5f0e07f0495a7c20a983e14366f149af93280162aad9 | 1206 | 2025-11-24 06:50:02
 src/agents/domain_leads/docs_domain_lead.py | e9cb3a51eedac82fbbdd89a66f706b8efc76e2bbe41d8a3864d96eccdc4f25ba | 1449 | 2025-11-24 15:36:34
 src/agents/executors/__init__.py | 5364fc060ec673488d47ecabda13ce134b064d15765c863afee263dd62ef0aa1 | 493 | 2025-11-24 06:38:15
@@ -93,8 +99,8 @@ src/agents/executors/base_executor.py | 72333d9b285d7cbc594d7d589d4a575bd92ff49a
 src/agents/executors/coder_executor.py | 18bb81f902f145e4382908d720befc7e08ab9cd79f6d85a0ddb5b7c7dddcd26c | 1422 | 2025-11-24 06:37:32
 src/agents/executors/tester_executor.py | 2c231f2d0f2149ad7347528cab07cd1b4c9ca4bbbc44249231e625bc3893103e | 1191 | 2025-11-24 06:37:37
 src/agents/executors/writer_executor.py | 1804f53f71ec990d0e209358bc23ede23eaafb2a94028f1ca1bbc47da8831854 | 1105 | 2025-11-24 06:37:39
-src/agents/liaison_agent.py | d5d9f694a6170eb29492b8cb3d8a844bf3930818d3d81c529944a3b43f143636 | 5289 | 2025-11-21 06:14:36
-src/agents/project_lead_agent.py | 41f05c403db5dc1a71bac47126e064a530284b203f0340c884ac67d8ee1fcb74 | 5496 | 2025-11-24 07:15:10
+src/agents/liaison_agent.py | aff65dc2b4a5d37117514b5dfcf19f2813890fd1a701be9c755240f7eb356d48 | 5355 | 2025-11-25 08:25:17
+src/agents/project_lead_agent.py | 0d951f69281c9f1d28237ec221eed380fa0767a7cc94fc1e1195920d4cd5a692 | 5536 | 2025-11-25 08:25:19
 src/api/__init__.py | e6bb7dd2138b3a24bb293a1ddbe2233af515044229a385bf606757c9f9355871 | 38 | 2025-11-20 18:53:59
 src/api/agent_api.py | 3a5604ffae16918a177ab530aca2b470e8ad5de0853c62cbf21dd97e25a7bbe4 | 5441 | 2025-11-21 13:20:56
 src/api/routes/projects.py | efc6c55509f2e43fc23da21f2daef76581733a5f95f4a409aa12a82cdcba146f | 1680 | 2025-11-21 13:15:29
@@ -128,15 +134,17 @@ src/services/metrics_service.py | 14e15bf5a9b686a0b787f46a9e70729e612f33dfd989c6
 src/services/project_service.py | b4a1f76e20510a721fc9d9db6507639a578689406eae60a13cae94e3166ef69c | 2845 | 2025-11-22 06:04:55
 src/services/provider_discovery.py | a159d5f970ef1766f510e9445c6f6da6badb253c7e138480bbd4170f341e7523 | 2004 | 2025-11-20 17:54:56
 src/services/session_service.py | 2f3a73fc70566af5f537aae0ba9cbc4d71a3c6ae0a866f4bf040e155b44e38cd | 6493 | 2025-11-21 13:18:49
-src/tools/__init__.py | 96952d02e8eb0a7234cfde16db4ea4542d6c5c9861608e5bdd32d16f214b0cb5 | 4710 | 2025-11-24 07:59:59
-src/tools/code_tools.py | 93fc494b6a70fa39a9cc268a007daa8c59354dac3591a29e9a4656e9d296fe85 | 5087 | 2025-11-24 08:00:32
-src/tools/communication_tools.py | 9fa6a58c40c37dc84aafbc68c8db68c9af289b8ba57179305add0d06c999c0c5 | 1268 | 2025-11-20 13:51:18
-src/tools/database_tool_provider.py | d6be6ae89e6aa049a2a981b9b7412eb94edf572cd6401210c946d673d19fccd7 | 3716 | 2025-11-19 12:04:44
-src/tools/doc_update_planner.py | a6d8df984d8b38dfac24f7edced1ce819816bbf57936238734d58a8c023aeab7 | 11450 | 2025-11-21 07:48:32
-src/tools/documentor.py | db234feff5165ae1c8aa9184ce7e47d922aa25c2d59097206c8b24b0004743e3 | 3303 | 2025-11-24 07:58:17
-src/tools/persistent_context.py | c80b5d5977adc15d874c92a005f27c770f1cb987384eb1191d6d4c34c56a6b91 | 1726 | 2025-11-20 13:51:16
-src/tools/project_manager.py | f91285483153dcf31397533ab4363caf41f664f9fb165dfcdde92365e07ca706 | 3358 | 2025-11-21 13:15:45
-src/tools/web_search.py | 19d1ac7045caba92ed2573abbd912df7643f5e88cb7f8532475c12f8987bfc0b | 1360 | 2025-11-20 13:51:03
+src/tools/__init__.py | e10f6f9c71daa021d69ce16710e104d53c1eeba71ccf23524094cddfffae3060 | 5040 | 2025-11-25 08:27:34
+src/tools/tier1/communication_tools.py | 9fa6a58c40c37dc84aafbc68c8db68c9af289b8ba57179305add0d06c999c0c5 | 1268 | 2025-11-20 13:51:18
+src/tools/tier1/web_search.py | 19d1ac7045caba92ed2573abbd912df7643f5e88cb7f8532475c12f8987bfc0b | 1360 | 2025-11-20 13:51:03
+src/tools/tier2/__init__.py | a29200d8439ff061d1d745923a88a0d05e3515dcd1f4ee8496afb8aff059eb9e | 499 | 2025-11-25 08:27:32
+src/tools/tier2/doc_update_planner.py | a6d8df984d8b38dfac24f7edced1ce819816bbf57936238734d58a8c023aeab7 | 11450 | 2025-11-21 07:48:32
+src/tools/tier2/documentor.py | db234feff5165ae1c8aa9184ce7e47d922aa25c2d59097206c8b24b0004743e3 | 3303 | 2025-11-24 07:58:17
+src/tools/tier2/project_manager.py | f91285483153dcf31397533ab4363caf41f664f9fb165dfcdde92365e07ca706 | 3358 | 2025-11-21 13:15:45
+src/tools/tier3/persistent_context.py | c80b5d5977adc15d874c92a005f27c770f1cb987384eb1191d6d4c34c56a6b91 | 1726 | 2025-11-20 13:51:16
+src/tools/tier4/__init__.py | 5527a8bca163eab8464a9cb75f9c08cfb74f96bbab2a32828f291028e4c06e64 | 330 | 2025-11-25 08:28:04
+src/tools/tier4/code_tools.py | 93fc494b6a70fa39a9cc268a007daa8c59354dac3591a29e9a4656e9d296fe85 | 5087 | 2025-11-24 08:00:32
+src/tools/tier4/database_tool_provider.py | d6be6ae89e6aa049a2a981b9b7412eb94edf572cd6401210c946d673d19fccd7 | 3716 | 2025-11-19 12:04:44
 src/ui/app.py | 5a7ad4c6e60e5a17c3224b36bb1d6c17f628c2157717a4491db73a68fd0ba107 | 2828 | 2025-11-20 13:08:19
 src/ui/components/gpu_stats.py | d4e0a9420aeca4a65538f5847c3e3db97fbc1dda442d8b13fbe163e1c83c59db | 2408 | 2025-11-22 05:48:31
 src/ui/streamlit_app.py | bdc4046eb6702360ff52e74e43b2560f4c855b48f35c57c2a570abc1749fb1f0 | 11435 | 2025-11-22 06:41:43
@@ -144,9 +152,9 @@ src/utils/__init__.py | 579a0e143cd43339506656e8405dce58e7bd82d7a20662d567376b6b
 src/utils/logger.py | f29e17723e862e0b12f4709f66a313f684bb94786629bf9b5098a631d07b5bab | 1951 | 2025-11-25 00:32:10
 src/workflows/__init__.py | 68dc56d8ca6f16db78571e683e27e2a588d27c689d10da273b970f7503dab619 | 378 | 2025-11-24 06:55:20
 src/workflows/maf_workflow.py | c47f37973c6afabc4c5a734faa4559cb7ff28ffb962a50b70f44fd38667ad196 | 1150 | 2025-11-20 17:47:39
-src/workflows/main_orchestrator.py | adfba849ccfc972d592f5e9510c05a69840612a979fc6a7115e0ad7d6873346c | 4609 | 2025-11-20 12:46:38
-src/workflows/olb_workflow.py | b4d9db0c35a2ca611422b41ab91c6c2940bbe87fdfd7e252f33e47c25b0a602b | 5342 | 2025-11-24 06:55:07
-src/workflows/research_workflow.py | 13027ed14e8729b56d0ff7d97c9378c578299cc9d85261265712bf13604f5d59 | 1419 | 2025-11-20 12:48:18
+src/workflows/main_orchestrator.py | d3def79a0b331e113a6e3077edd15aac08ec86130deb8c25d93b8195712ec2f7 | 4652 | 2025-11-25 08:26:21
+src/workflows/olb_workflow.py | ad82f4038421fb4a06f83770bf438dd5632ceb4eeb407e66aae36d12b69fc2f0 | 5465 | 2025-11-25 08:26:13
+src/workflows/research_workflow.py | c9d77d7b3d503d5174a12cde6a9ec80a9fa606be70d699a7dd61a4458fa97a20 | 1469 | 2025-11-25 08:26:19
 src/workflows/tlb_workflow.py | 27b5991619b48bbe349fc0c8cd09de06761969eaad41d5f2cb12851bbd966aa1 | 4925 | 2025-11-24 06:41:24
 tests/integration/test_context_retrieval_agent.py | dd010f7b17d24ac405b50ad54e2347ece4043fa766d5bf0c9c43cf102de69cd0 | 3939 | 2025-11-21 10:17:52
 tests/integration/test_domain_lead_integration.py | b733816145e6d83f2d11457bc5718786b921dc539592a90ac5dbaae309fcf1c1 | 3067 | 2025-11-24 06:51:36
@@ -278,3 +286,4 @@ ui-next/src/lib/utils.ts | c578b87f59ae6033e51c3a3b4caf1f85c5649646edc51bf225013
 ui-next/src/types/agent.ts | 787081604635ee8c128206239f448c99bdcf72c38f20f1e4ae8a8b2a59be73b6 | 799 | 2025-11-20 20:11:09
 ui-next/tailwind.config.ts | 2e28675d860e3203110b2f403c6b835a1460f0c048938eee9523e62b7077831f | 868 | 2025-11-20 20:02:58
 ui-next/tsconfig.json | 1f8bb9b74a79e059dfdae28828984cb6988c1502af1df061a574d8176c516270 | 717 | 2025-11-20 20:04:05
+upp/input/SESSION_TOKEN.md | 3ff8ac17039fd32eaab49884c34de76106687ec85087cb4b2fa633f7627a5a7b | 49 | 2025-11-25 00:39:56
