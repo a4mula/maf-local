@@ -128,7 +128,7 @@ Tier 3: Tactical (Domain Leads)
    [DevDomainLead] [QADomainLead] [DocsDomainLead]
         ↓ (TLB Workflow)
 Tier 4: Execution (Atomic)
-   [CoderExecutor] [TesterExecutor] [WriterExecutor]
+   [CoderExecutor] [TesterExecutor] [WriterExecutor] [ResearchExecutor]
 ```
 
 ### Key Components:
