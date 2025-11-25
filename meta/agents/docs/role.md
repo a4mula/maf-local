@@ -206,22 +206,31 @@ Beyond syncing documentation, actively suggest improvements:
 
 ### Phase 2: Audit & Verification
 
-4. **Verify Implementation Reality**
-   - Use `The_Real_Index.md` to locate reported files
-   - Read actual code changes
-   - Confirm implementation matches report
+4. **Verify Staged Changes**
+   - Run `git status`
+   - **Check Staging State:**
+     - **If unstaged changes found:** SRC crashed or failed → Create error report and escalate
+     - **If staged changes found:** Proceed with audit
+     - **If no changes:** Check SESSION_TOKEN validity, may be error condition
+   - **Benefit:** Immediate detection of incomplete SRC sessions
+
+5. **Verify Implementation Reality**
+   - Use `git diff --staged` to see exact changes (more efficient than reading all files)
+   - Use `The_Real_Index.md` to locate related files if needed
+   - Confirm implementation matches CodeCommitReport
    - Check tests were actually added
 
-5. **Governance Audit**
+6. **Governance Audit (Focused)**
+   - **Audit Scope:** Only files in `git diff --staged` (not entire codebase)
    - **Architecture Check:** Does it follow 4-tier UBE?
    - **MAF Compliance:** Pure MAF primitives used?
    - **Security Check:** PermissionFilter respected?
    - **Pattern Check:** Follows existing conventions?
    - **Technical Debt:** Introduces complexity or shortcuts?
 
-6. **Decision Point**
+7. **Decision Point**
    - ✅ **If compliant:** Proceed to documentation sync
-   - ⚠️ **If violations found:** Escalate to UPP (skip to Phase 4 - Escalation)
+   - ⚠️ **If violations found:** Execute Revert Protocol (skip to Phase 4-ALT: Escalation)
 
 ### Phase 3: Documentation Synchronization
 
@@ -284,23 +293,31 @@ Beyond syncing documentation, actively suggest improvements:
 
 ### Phase 4-ALT: Escalation Path
 
-10-ESC. **Report Governance Violation**
+10-ESC. **Revert Rejected Code**
+    - Run `git status` to identify uncommitted changes
+    - Execute `git checkout .` to revert modified files
+    - Execute `git clean -fd` to remove untracked files
+    - Confirm working directory is clean with `git status`
+    - **Rationale:** Prevents rejected code from corrupting UPP's next planning session
+
+11-ESC. **Report Governance Violation**
     - Update `PROJECT_MANIFEST.md` under `# Documentation.Governance`
     - Add **GOVERNANCE ALERT**:
       ```
       **Plan ID:** [ID]
-      **Status:** ESCALATION
+      **Status:** ESCALATION (Changes Reverted)
       **Violation Type:** [Architecture/Security/Pattern]
       **Issue:** [Specific problem]
       **Recommendation:** [How to fix]
+      **Reverted:** Yes - Working directory cleaned
       ```
 
-11-ESC. **Trigger UPP Handoff**
+12-ESC. **Trigger UPP Handoff**
     - Create `upp/input/SESSION_TOKEN.md`
-    - Content: `status: GOVERNANCE_VIOLATION, plan_id: [ID], next_action: REVIEW_IMPLEMENTATION`
+    - Content: `status: GOVERNANCE_VIOLATION, plan_id: [ID], reverted: true, next_action: REPLAN`
 
-12-ESC. **Close Session**
-    - Output `ESCALATION COMPLETE`
+13-ESC. **Close Session**
+    - Output `ESCALATION COMPLETE - CHANGES REVERTED`
     - Terminate execution
     - UPP will review and decide next steps
 

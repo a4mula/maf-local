@@ -220,7 +220,17 @@ Before executing ANY plan, validate:
 
 ### Phase 3: Completion & Handoff
 
-10. **Update PROJECT_MANIFEST.md**
+10. **Stage Changes (MANDATORY)**
+    - Run `git add .` to stage all modifications
+    - **CRITICAL:** Do NOT run `git commit` - Only DOCS commits
+    - This staging signals "Implementation Complete, Ready for Audit"
+
+11. **Verify Staged State**
+    - Run `git diff --staged --name-only` to list changed files
+    - Include this list in CodeCommitReport under **Files Changed**
+    - Verify no unexpected files staged (e.g., `.env`, `__pycache__/`, `.log`)
+
+12. **Update PROJECT_MANIFEST.md**
     - Add `CodeCommitReport` to `# Implementation.Feedback`
     - Include:
       ```
@@ -228,24 +238,27 @@ Before executing ANY plan, validate:
       **Status:** SUCCESS | PARTIAL | ESCALATION
       
       **Changes Implemented:**
-      - [NEW] `path/to/new_file.py`
-      - [MODIFY] `path/to/modified_file.py`
-      - [DELETE] `path/to/deleted_file.py`
+      - [NEW/MODIFY/DELETE] `path/to/file` - Description
       
-      **Verification Results:** [Test counts, manual checks]
-      **Documentation Requests:** [Specific updates for DOCS agent]
-      **Next Actions:** [Handoff details]
+      **Files Changed (Staged):**
+      <output of git diff --staged --name-only>
+      
+      **Verification:**
+      - Test results
+      - Compliance check results
+      
+      **Documentation Feedback for DOCS:**
+      - API changes requiring documentation
       ```
 
-11. **Trigger DOCS Handoff**
-    - Create/overwrite `docs/00_META/input/SESSION_TOKEN.md`
-    - Content: `status: CODE_COMPLETE, plan_id: [ID]`
-    - This signals DOCS agent to audit and sync documentation
+13. **Trigger DOCS Handoff**
+    - Create `docs/00_META/input/SESSION_TOKEN.md`
+    - Content: `status: CODE_COMPLETE, plan_id: [ID], staged: true`
 
-12. **Close Session**
-    - Output `HANDOFF COMPLETE`
+14. **Close Session**
+    - Output `HANDOFF COMPLETE - CHANGES STAGED FOR REVIEW`
     - Terminate execution
-    - DOCS agent will take over
+    - DOCS will audit staged changes and commit if approved
 
 ### Phase 3-ALT: Escalation Path
 

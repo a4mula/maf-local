@@ -236,7 +236,23 @@ Basic 2-tier system, tool execution, file generation operational.
 
 ## # Maintenance.Log
 
-### 2025-11-25 01:21 - UPP System Audit \u0026 Archive
+### 2025-11-25 14:18 - Antigravity System Improvements
+**Actions:**
+- Updated `meta/agents/docs/role.md`:
+  - Added revert protocol to escalation path (`git checkout .`, `git clean -fd`)
+  - Added staging verification to audit phase (`git status`, `git diff --staged`)
+  - Updated SESSION_TOKEN format (added `reverted: true` flag)
+- Updated `meta/agents/src/role.md`:
+  - Added git staging requirement (`git add .`)
+  - Prohibited `git commit` (DOCS-only action)
+  - Enhanced CodeCommitReport format (staged files list)
+  - Updated SESSION_TOKEN format (added `staged: true` flag)
+
+**Impact:** Fixes critical "Dirty Directory" corruption risk and formalizes git-based handoff protocol
+
+---
+
+### 2025-11-25 01:21 - UPP System Audit & Archive
 **Actions:**
 - Created archive structure (PHASE_HISTORY.md, COMMIT_HISTORY.md, DOCS_HISTORY.md)
 - Archived completed plans (DOCS-DL-001, SRC-AUDIT-001)
