@@ -93,6 +93,8 @@ maf-local/
 3.  **Domain Leads:** Implemented DevDomainLead and DocsDomainLead.
 3.  **Tool Refactor:** Eliminated technical debt, achieved 100% MAF compliance.
 4.  **Governance:** Implemented `PermissionFilter` middleware.
+- **New utils package:** Added `src/utils/` with structured logging (`logger.py`).
+- **Verification scripts moved:** Relocated verification scripts to `scripts/verification/`.
 
 ## Next Steps
 

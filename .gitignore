@@ -12,3 +12,34 @@ maf-volumes/
 ollama/
 litellm_logs/
 *.log
+
+# Build artifacts
+.next/
+ui-next/.next/
+ui-next/node_modules/
+build/
+dist/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# User data
+workspaces/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# Temporary
+*.tmp
+.files/
