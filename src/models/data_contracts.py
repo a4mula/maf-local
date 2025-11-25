@@ -11,6 +11,9 @@ These contracts enable deterministic routing and aggregation in OLB/TLB workflow
 
 from typing import List, Dict, Any, Optional, Literal
 from pydantic import BaseModel, Field
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 # Note: Using Pydantic BaseModel for now since agent_framework may not export AFBaseSettings
 # If AFBaseSettings is available, import and use it instead:
@@ -107,5 +110,5 @@ if __name__ == "__main__":
         execution_time_ms=5420
     )
     
-    print(f"Plan: {plan.plan_id} with {len(plan.tasks)} tasks")
-    print(f"Report: {report.executor_name} - {report.status}")
+    logger.info(f"Plan: {plan.plan_id} with {len(plan.tasks)} tasks")
+    logger.info(f"Report: {report.executor_name} - {report.status}")

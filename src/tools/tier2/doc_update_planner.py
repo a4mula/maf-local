@@ -16,6 +16,9 @@ from typing import Dict, List, Optional
 import yaml
 import json
 from datetime import datetime
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 class DocUpdatePlanner:
@@ -322,15 +325,15 @@ async def get_update_template(
 if __name__ == "__main__":
     async def main():
         # Example: Plan updates for Phase 10
-        print("Planning documentation updates for Phase 10...")
+        logger.info("Planning documentation updates for Phase 10...")
         checklist = await plan_documentation_updates(phase=10)
-        print(checklist)
+        logger.info(checklist)
         
-        print("\n" + "="*80 + "\n")
+        logger.info("\n" + "="*80 + "\n")
         
         # Example: Get template for creating a new how-to guide
-        print("Getting template for new how-to guide...")
+        logger.info("Getting template for new how-to guide...")
         template = await get_update_template('how_to', 'create_new')
-        print(template)
+        logger.info(template)
     
     asyncio.run(main())

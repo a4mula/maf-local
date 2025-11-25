@@ -3,6 +3,9 @@ import json
 from typing import List, Optional
 from agent_framework import WorkflowCheckpoint
 from src.config.settings import settings
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 class PostgreSQLCheckpointStorage:
     """
@@ -14,7 +17,7 @@ class PostgreSQLCheckpointStorage:
 
     async def save_checkpoint(self, checkpoint: WorkflowCheckpoint) -> str:
         """Save a checkpoint and return its ID."""
-        print(f"[Checkpoint] Saving checkpoint {checkpoint.checkpoint_id} for workflow {checkpoint.workflow_id}")
+        logger.info(f"[Checkpoint] Saving checkpoint {checkpoint.checkpoint_id} for workflow {checkpoint.workflow_id}")
         
         # Serialize to JSON
         data = checkpoint.to_dict()

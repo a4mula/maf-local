@@ -7,6 +7,9 @@ Implements security and compliance policies following MAF SDK standards:
 """
 
 from agent_framework import FunctionMiddleware, FunctionInvocationContext
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 class GovernanceException(Exception):
@@ -75,7 +78,7 @@ class PermissionFilter(FunctionMiddleware):
                 )
             
             # Log approved access (audit trail)
-            print(f"[PermissionFilter] ✓ Approved FileWriter call from '{agent_name}'")
+            logger.info(f"[PermissionFilter] ✓ Approved FileWriter call from '{agent_name}'")
         
         # Proceed to next middleware or function execution
         await next(context)

@@ -2,6 +2,9 @@ import re
 import pathlib
 import yaml
 from typing import List, Dict, Any
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 SESSION_HANDOFF_PATH = pathlib.Path(__file__).parents[2] / "docs" / ".ai" / "Documentor" / "SESSION_HANDOFF.md"
 
@@ -30,7 +33,7 @@ def update_architecture_diagram(diagram_md: str) -> None:
     # Replace the first ```mermaid block we find
     new_content = re.sub(r"```mermaid[\s\S]*?```", f"```mermaid\n{diagram_md}\n```", arch_content, count=1)
     arch_path.write_text(new_content, encoding="utf-8")
-    print(f"[Documentor] Updated architecture diagram in {arch_path}")
+    logger.info(f"[Documentor] Updated architecture diagram in {arch_path}")
 
 def update_file_section(section_body: str, target_path: pathlib.Path) -> None:
     """Append or replace a specific section in a markdown file.
@@ -38,7 +41,7 @@ def update_file_section(section_body: str, target_path: pathlib.Path) -> None:
     """
     if not target_path.exists():
         target_path.write_text(section_body + "\n", encoding="utf-8")
-        print(f"[Documentor] Created new doc {target_path}")
+        logger.info(f"[Documentor] Created new doc {target_path}")
     else:
         # Simple strategy: ensure the section header exists, then replace its body.
         content = target_path.read_text(encoding="utf-8")
@@ -49,7 +52,7 @@ def update_file_section(section_body: str, target_path: pathlib.Path) -> None:
         else:
             new_content = f"## Updated Section\n\n{section_body}\n"
         target_path.write_text(new_content, encoding="utf-8")
-        print(f"[Documentor] Updated {target_path}")
+        logger.info(f"[Documentor] Updated {target_path}")
 
 def main() -> None:
     handoff = read_handoff()

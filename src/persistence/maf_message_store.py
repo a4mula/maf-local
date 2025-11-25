@@ -10,6 +10,9 @@ from typing import Sequence, MutableMapping, Any
 from agent_framework import ChatMessage
 from agent_framework._threads import ChatMessageStoreProtocol
 from src.config.settings import settings
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 class PostgreSQLMessageStore(ChatMessageStoreProtocol):
@@ -95,7 +98,7 @@ class PostgreSQLMessageStore(ChatMessageStoreProtocol):
             return messages
             
         except Exception as e:
-            print(f"[PostgreSQLMessageStore] Error retrieving messages: {e}")
+            logger.info(f"[PostgreSQLMessageStore] Error retrieving messages: {e}")
             return []
         finally:
             if conn:
@@ -135,7 +138,7 @@ class PostgreSQLMessageStore(ChatMessageStoreProtocol):
                 self._messages_cache.append(msg)
                 
         except Exception as e:
-            print(f"[PostgreSQLMessageStore] Error storing messages: {e}")
+        logger.info(f"[PostgreSQLMessageStore] Error storing messages: {e}")
         finally:
             if conn:
                 await conn.close()

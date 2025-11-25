@@ -3,6 +3,9 @@ from typing import Dict, Callable, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 import uuid
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 @dataclass
 class Message:
@@ -27,7 +30,7 @@ class MessageBus:
         """
         Registers an agent's callback function to receive messages.
         """
-        print(f"[MessageBus] Registering agent: {agent_name}")
+        logger.info(f"[MessageBus] Registering agent: {agent_name}")
         self._subscribers[agent_name] = callback
 
     async def send(self, message: Message) -> bool:
@@ -37,7 +40,7 @@ class MessageBus:
         """
         recipient = message.recipient
         if recipient in self._subscribers:
-            print(f"[MessageBus] Routing message from '{message.sender}' to '{recipient}'")
+            logger.info(f"[MessageBus] Routing message from '{message.sender}' to '{recipient}'")
             # Execute the callback (can be sync or async, but we await if it's a coroutine)
             callback = self._subscribers[recipient]
             if asyncio.iscoroutinefunction(callback):
@@ -46,7 +49,7 @@ class MessageBus:
                 callback(message)
             return True
         else:
-            print(f"[MessageBus] WARNING: Recipient '{recipient}' not found.")
+            logger.info(f"[MessageBus] WARNING: Recipient '{recipient}' not found.")
             return False
 
     async def broadcast(self, sender: str, content: str):

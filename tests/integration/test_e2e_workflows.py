@@ -64,11 +64,15 @@ class E2ETestHarness:
         # Configure run() to return "IDEA"
         async def mock_run(*args, **kwargs):
             return "IDEA"
-        self.mock_sdk_agent.run.side_effect = mock_run
-        
+            
         self.liaison = LiaisonAgent(project_lead=self.mock_pl, chat_client=MagicMock())
-        # Inject the mock agent (since LiaisonAgent creates it in __init__)
-        self.liaison.sdk_agent = self.mock_sdk_agent
+        # Mock the run method directly since LiaisonAgent now inherits from ChatAgent
+        self.liaison.run = MagicMock(side_effect=mock_run)
+        
+        # We don't need to patch ChatAgent anymore for the inheritance case if we just mock the method
+        # But we might want to stop the patcher if we started it.
+        # Actually, let's simplify: just mock the run method on the instance.
+
         
         self.start_time = 0
         self.end_time = 0

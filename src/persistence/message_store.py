@@ -2,6 +2,9 @@ import asyncpg
 from typing import List, Dict
 from src.config.settings import settings
 from datetime import datetime
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 # Define the expected structure for a message in the history
 Message = Dict[str, str]
@@ -34,7 +37,7 @@ class MessageStoreProvider:
                 """
             )
         except Exception as e:
-            print(f"[MessageStore] Error initializing database: {e}")
+            logger.info(f"[MessageStore] Error initializing database: {e}")
             raise
         finally:
             if conn:
@@ -61,7 +64,7 @@ class MessageStoreProvider:
             )
         except Exception as e:
             # Crucial: Message storage failure should be logged but not crash the app
-            print(f"[MessageStore] WARNING: Failed to store message for session {self.session_id}. Error: {e}")
+            logger.info(f"[MessageStore] WARNING: Failed to store message for session {self.session_id}. Error: {e}")
         finally:
             if conn:
                 await conn.close()
@@ -87,7 +90,7 @@ class MessageStoreProvider:
             # Convert asyncpg records into the standard LLM message format
             return [{"role": r['role'], "content": r['content']} for r in records]
         except Exception as e:
-            print(f"[MessageStore] WARNING: Failed to retrieve history for session {self.session_id}. Error: {e}")
+            logger.info(f"[MessageStore] WARNING: Failed to retrieve history for session {self.session_id}. Error: {e}")
             return []
         finally:
             if conn:

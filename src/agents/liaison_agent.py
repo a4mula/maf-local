@@ -4,7 +4,7 @@ from src.utils import get_logger
 
 logger = get_logger(__name__)
 
-class LiaisonAgent:
+class LiaisonAgent(ChatAgent):
     """
     Tier 1: User interface layer
     - Captures user intent
@@ -64,12 +64,32 @@ class LiaisonAgent:
         logger.debug(f"Context length: {len(context)}")
         self.context = context
         
-        self.sdk_agent = ChatAgent(
+        super().__init__(
             name="Liaison",
             instructions=f"Capture user intent. Ask clarifying questions. No technical decisions. Once intent is clear, forward to Project Lead.\n\nCurrent Project Context:{context}",
             tools=[],  # No tools, just conversation
             chat_client=chat_client
         )
+
+    async def _classify_intent(self, message: str) -> str:
+        """Classify the user's intent."""
+        from agent_framework import AgentThread
+        
+        temp_thread = AgentThread()
+        classification_prompt = f"""
+        Analyze the following user message and classify its intent.
+        User Message: "{message}"
+        
+        Is this message:
+        1. A QUESTION about the project, the system, or the agent itself? (e.g. "What is this project?", "Who are you?")
+        2. A PROJECT IDEA or instruction to start work? (e.g. "Let's build a game", "Create a new workflow")
+        3. GREETING or CHIT-CHAT? (e.g. "Hello", "How are you?")
+        
+        Respond with ONLY one word: QUESTION, IDEA, or CHIT_CHAT.
+        """
+        
+        classification = await self.run(classification_prompt, thread=temp_thread)
+        return str(classification).strip().upper()
 
     async def handle_user_message(self, message: str):
         """
@@ -78,25 +98,10 @@ class LiaisonAgent:
         or if clarifying questions are needed.
         """
         try:
-            # Use the SDK agent to process the message
-            from agent_framework import ChatMessage, AgentThread
+            from agent_framework import AgentThread
             
-            # 1. Classify intent using a temporary thread
-            temp_thread = AgentThread()
-            classification_prompt = f"""
-            Analyze the following user message and classify its intent.
-            User Message: "{message}"
-            
-            Is this message:
-            1. A QUESTION about the project, the system, or the agent itself? (e.g. "What is this project?", "Who are you?")
-            2. A PROJECT IDEA or instruction to start work? (e.g. "Let's build a game", "Create a new workflow")
-            3. GREETING or CHIT-CHAT? (e.g. "Hello", "How are you?")
-            
-            Respond with ONLY one word: QUESTION, IDEA, or CHIT_CHAT.
-            """
-            
-            classification = await self.sdk_agent.run(classification_prompt, thread=temp_thread)
-            intent = str(classification).strip().upper()
+            # 1. Classify intent
+            intent = await self._classify_intent(message)
             logger.debug(f"User intent classified as: {intent}")
             
             if "IDEA" in intent:
@@ -118,7 +123,7 @@ class LiaisonAgent:
                 User Question: "{message}"
                 """
                 
-                response = await self.sdk_agent.run(augmented_prompt, thread=response_thread)
+                response = await self.run(augmented_prompt, thread=response_thread)
                 return str(response)
                 
         except Exception as e:

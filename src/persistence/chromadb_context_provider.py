@@ -10,6 +10,9 @@ import uuid
 import asyncio
 import chromadb
 from chromadb.config import Settings
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 class ChromaDBContextProvider:
@@ -53,9 +56,9 @@ class ChromaDBContextProvider:
             self._collection = self._client.get_or_create_collection(
                 name=self.collection_name
             )
-            print(f"[ChromaDBContextProvider] Connected to ChromaDB at {self.host}:{self.port}")
+            logger.info(f"[ChromaDBContextProvider] Connected to ChromaDB at {self.host}:{self.port}")
         except Exception as e:
-            print(f"[ChromaDBContextProvider] Failed to connect to ChromaDB: {e}")
+            logger.info(f"[ChromaDBContextProvider] Failed to connect to ChromaDB: {e}")
             self._client = None
             self._collection = None
     
@@ -197,7 +200,7 @@ class ChromaDBContextProvider:
                 }
             return None
         except Exception as e:
-            print(f"[ChromaDBContextProvider] Error retrieving document {document_id}: {e}")
+            logger.info(f"[ChromaDBContextProvider] Error retrieving document {document_id}: {e}")
             return None
     
     async def delete(self, document_id: str) -> bool:
@@ -220,7 +223,7 @@ class ChromaDBContextProvider:
             self._collection.delete(ids=[document_id])
             return True
         except Exception as e:
-            print(f"[ChromaDBContextProvider] Error deleting document {document_id}: {e}")
+            logger.info(f"[ChromaDBContextProvider] Error deleting document {document_id}: {e}")
             return False
     
     @property

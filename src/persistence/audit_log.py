@@ -2,6 +2,9 @@ import asyncpg
 from datetime import datetime
 from src.config.settings import settings
 from typing import Optional
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 class AuditLogProvider:
     """
@@ -29,9 +32,9 @@ class AuditLogProvider:
                 );
                 """
             )
-            print("[AuditLog] Audit log table initialized successfully.")
+            logger.info("[AuditLog] Audit log table initialized successfully.")
         except Exception as e:
-            print(f"[AuditLog] Error initializing database: {e}")
+            logger.info(f"[AuditLog] Error initializing database: {e}")
             raise
         finally:
             if conn:
@@ -65,7 +68,7 @@ class AuditLogProvider:
             )
         except Exception as e:
             # Crucial: Audit logging should not crash the main application
-            print(f"[AuditLog] WARNING: Failed to log event for {agent_name} ({operation}). Error: {e}")
+            logger.info(f"[AuditLog] WARNING: Failed to log event for {agent_name} ({operation}). Error: {e}")
             
             # Record error metric
             try:
@@ -88,14 +91,14 @@ class AuditLogProvider:
 # Example of how to integrate this into src/main.py for demonstration:
 async def test_audit_log():
     audit_log = AuditLogProvider()
-    print("\n--- Testing AuditLog Provider ---")
+    logger.info("\n--- Testing AuditLog Provider ---")
     await audit_log.log(
         agent_name="Local-Dev",
         operation="AGENT_STARTUP",
         details="CoreAgent initialization successful with LiteLLM client.",
         session_id="session-xyz-123"
     )
-    print("--- AuditLog Test Complete ---")
+    logger.info("--- AuditLog Test Complete ---")
 
 if __name__ == "__main__":
     import asyncio

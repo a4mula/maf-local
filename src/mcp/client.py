@@ -2,6 +2,9 @@ import asyncio
 import json
 import sys
 from typing import List, Dict, Any, Optional
+from src.utils import get_logger
+
+logger = get_logger(__name__)
 
 class MCPClient:
     """
@@ -16,14 +19,14 @@ class MCPClient:
 
     async def connect(self):
         """Starts the MCP Server subprocess."""
-        print(f"[MCP] Connecting to server: {self.command} {' '.join(self.args)}")
+        logger.info(f"[MCP] Connecting to server: {self.command} {' '.join(self.args)}")
         self.process = await asyncio.create_subprocess_exec(
             self.command, *self.args,
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        print("[MCP] Connected.")
+        logger.info("[MCP] Connected.")
 
     async def _send_request(self, method: str, params: Optional[Dict[str, Any]] = None) -> Any:
         """Sends a JSON-RPC request and waits for the response."""
@@ -73,4 +76,4 @@ class MCPClient:
         if self.process:
             self.process.terminate()
             await self.process.wait()
-            print("[MCP] Disconnected.")
+            logger.info("[MCP] Disconnected.")

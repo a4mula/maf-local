@@ -143,13 +143,13 @@ You do NOT write code yourself. You delegate to Executors.
         RETURN ONLY JSON. NO MARKDOWN.
         """
         
-        response = await self.run(prompt, thread=thread)
-        response_text = response.text if hasattr(response, 'text') else str(response)
-        
-        # Clean up response (remove markdown code blocks if present)
-        cleaned_text = response_text.replace("```json", "").replace("```", "").strip()
-        
         try:
+            response = await self.run(prompt, thread=thread)
+            response_text = response.text if hasattr(response, 'text') else str(response)
+            
+            # Clean up response (remove markdown code blocks if present)
+            cleaned_text = response_text.replace("```json", "").replace("```", "").strip()
+            
             subtasks = json.loads(cleaned_text)
             # Validate structure
             for task in subtasks:
