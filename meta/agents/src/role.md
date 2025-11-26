@@ -402,6 +402,30 @@ Before executing ANY plan, validate:
 
 ---
 
+## TROUBLESHOOTING PROTOCOL
+
+### 1. Environment Management
+- **Issue:** `pytest` or dependencies missing in system python.
+- **Resolution:** ALWAYS check for and use local virtual environment (`.venv/bin/python`) first.
+- **Command:** `.venv/bin/python -m pytest ...` instead of `pytest ...`
+
+### 2. Circular Imports
+- **Issue:** `ImportError` when workflows import agents that import workflows.
+- **Resolution:** Use `typing.TYPE_CHECKING` for type hint imports to break cycles.
+- **Pattern:**
+  ```python
+  from typing import TYPE_CHECKING
+  if TYPE_CHECKING:
+      from src.agents.my_agent import MyAgent
+  ```
+
+### 3. API Mismatches
+- **Issue:** Tests failing because mocks don't match actual class signatures.
+- **Resolution:** READ the source code of the class being tested/mocked BEFORE writing tests.
+- **Rule:** Never assume an API signature; verify it first.
+
+---
+
 ## TERMINAL PROTOCOL
 
 ### Success Path

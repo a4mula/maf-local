@@ -25,15 +25,17 @@ def mock_domain_leads():
     }
 
 @pytest.fixture
-def olb_workflow(mock_project_lead, mock_domain_leads):
+def olb_workflow(mock_domain_leads):
     """Create OLBWorkflow instance."""
-    return OLBWorkflow(project_lead=mock_project_lead, domain_leads=mock_domain_leads)
+    return OLBWorkflow(domain_leads=mock_domain_leads)
 
 class TestOLBEdgeCases:
     
     @pytest.mark.asyncio
     async def test_route_ambiguous_domain(self, olb_workflow):
         """Should handle tasks with ambiguous domains."""
+        from agent_framework import AgentThread
+        
         # Setup plan with unknown domain
         plan = StrategicPlan(
             plan_id="plan_ambiguous",
@@ -47,27 +49,23 @@ class TestOLBEdgeCases:
             ]
         )
         
-        # Execute routing
-        # Note: OLBWorkflow implementation details might vary, assuming route_tasks method exists
-        # If not, we test the public interface execute_workflow
-        
-        # Mock project lead to return this plan
-        olb_workflow.project_lead.create_plan.return_value = plan
+        thread = AgentThread()
         
         # Execute
-        result = await olb_workflow.execute_workflow("Do something")
+        result = await olb_workflow.execute_plan(plan, thread)
         
-        # Should probably fail or route to default?
-        # Assuming it handles gracefully or raises error
-        # For this test, we check if it tried to route and failed
-        
-        # Verify no domain lead was called for "Unknown"
-        # And hopefully it logged an error or returned partial success
-        assert result["status"] in ["Completed", "Partial", "Failed"]
+        # Verify
+        # The implementation logs error and marks task as Failed
+        assert result["status"] == "Failed"
+        assert result["failed"] == 1
+        assert result["failed_details"][0]["task_id"] == "t1"
+        assert "No Domain Lead found" in result["failed_details"][0]["error"]
 
     @pytest.mark.asyncio
     async def test_route_mixed_domains(self, olb_workflow, mock_domain_leads):
         """Should correctly route mixed domain tasks."""
+        from agent_framework import AgentThread
+        
         plan = StrategicPlan(
             plan_id="plan_mixed",
             target_domains=["Frontend", "Backend"],
@@ -77,13 +75,12 @@ class TestOLBEdgeCases:
             ]
         )
         
-        olb_workflow.project_lead.create_plan.return_value = plan
-        
         # Mock domain lead execution
         mock_domain_leads["Frontend"].execute_task = AsyncMock(return_value={"status": "Completed"})
         mock_domain_leads["Backend"].execute_task = AsyncMock(return_value={"status": "Completed"})
         
-        result = await olb_workflow.execute_workflow("Build full stack feature")
+        thread = AgentThread()
+        result = await olb_workflow.execute_plan(plan, thread)
         
         assert result["status"] == "Completed"
         mock_domain_leads["Frontend"].execute_task.assert_called_once()
@@ -92,15 +89,16 @@ class TestOLBEdgeCases:
     @pytest.mark.asyncio
     async def test_empty_plan(self, olb_workflow):
         """Should handle empty plan gracefully."""
+        from agent_framework import AgentThread
+        
         plan = StrategicPlan(
             plan_id="plan_empty",
             target_domains=[],
             tasks=[]
         )
         
-        olb_workflow.project_lead.create_plan.return_value = plan
-        
-        result = await olb_workflow.execute_workflow("Do nothing")
+        thread = AgentThread()
+        result = await olb_workflow.execute_plan(plan, thread)
         
         assert result["status"] == "Completed"
-        assert result["tasks_executed"] == 0
+        assert result["total_tasks"] == 0

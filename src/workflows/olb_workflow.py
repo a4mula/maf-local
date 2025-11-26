@@ -14,10 +14,12 @@ Design:
 
 from agent_framework import AgentThread
 from src.models.data_contracts import StrategicPlan, TaskDefinition
-from src.agents.domain_leads.base_domain_lead import BaseDomainLead
 from src.utils import get_logger
-from typing import Dict, Any, List
+from typing import Dict, Any, List, TYPE_CHECKING
 from datetime import datetime
+
+if TYPE_CHECKING:
+    from src.agents.domain_leads.base_domain_lead import BaseDomainLead
 
 logger = get_logger(__name__)
 
@@ -39,7 +41,7 @@ class OLBWorkflow:
     - Aggregate results into final report
     """
     
-    def __init__(self, domain_leads: Dict[str, BaseDomainLead]):
+    def __init__(self, domain_leads: Dict[str, 'BaseDomainLead']):
         """Initialize OLB with available Domain Leads.
         
         Args:

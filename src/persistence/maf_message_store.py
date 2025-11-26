@@ -56,7 +56,7 @@ class PostgreSQLMessageStore(ChatMessageStoreProtocol):
                 """
             )
         except Exception as e:
-            print(f"[PostgreSQLMessageStore] Error initializing database: {e}")
+            logger.error(f"[PostgreSQLMessageStore] Error initializing database: {e}")
             raise
         finally:
             if conn:
@@ -138,7 +138,7 @@ class PostgreSQLMessageStore(ChatMessageStoreProtocol):
                 self._messages_cache.append(msg)
                 
         except Exception as e:
-        logger.info(f"[PostgreSQLMessageStore] Error storing messages: {e}")
+            logger.info(f"[PostgreSQLMessageStore] Error storing messages: {e}")
         finally:
             if conn:
                 await conn.close()
